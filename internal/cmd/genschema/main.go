@@ -3,17 +3,16 @@ package main
 import (
 	"bytes"
 	"flag"
-	"go/doc"
 	"go/format"
 	"io"
 	"log"
 	"os"
-	"strings"
 	"text/template"
 
 	_ "embed"
 
 	"github.com/diamondburned/go-buttplugio/internal/buttplugschema"
+	"github.com/diamondburned/go-buttplugio/internal/buttplugschema/tmplutil"
 )
 
 var (
@@ -38,7 +37,7 @@ func main() {
 
 	tmpl := template.New("")
 	tmpl = tmpl.Funcs(template.FuncMap{
-		"Comment": comment,
+		"Comment": tmplutil.Comment,
 	})
 	tmpl = template.Must(tmpl.Parse(tmplGo))
 
@@ -91,41 +90,4 @@ func newRenderer(t *template.Template, w io.Writer) func(string, interface{}) {
 			log.Panicf("cannot render %s: %v", name, err)
 		}
 	}
-}
-
-const (
-	CommentsColumnLimit = 80 - 3 // account for prefix "// "
-	CommentsTabWidth    = 4
-)
-
-func comment(cmt string, indentLvl int) string {
-	preIndent := strings.Repeat("\t", indentLvl)
-	// Account for the indentation in the column limit.
-	col := CommentsColumnLimit - (CommentsTabWidth * indentLvl)
-
-	cmt = docText(cmt, col)
-	cmt = strings.TrimSpace(cmt)
-
-	if cmt == "" {
-		return ""
-	}
-
-	if cmt != "" {
-		lines := strings.Split(cmt, "\n")
-		for i, line := range lines {
-			lines[i] = preIndent + "// " + line
-		}
-
-		cmt = strings.Join(lines, "\n")
-	}
-
-	return cmt
-}
-
-func docText(p string, col int) string {
-	builder := strings.Builder{}
-	builder.Grow(len(p) + 64)
-
-	doc.ToText(&builder, p, "", "   ", col)
-	return builder.String()
 }
