@@ -19,9 +19,8 @@ const (
 type Message interface {
 	// These types satisfy this interface:
 	{{ range .Fields -}}
-	//   - {{ .GoName }}
-	{{ end -}}
-
+	//    - {{ .GoName }}
+	{{ end }}
 	// MessageType returns the message's type (object key).
 	MessageType() MessageType
 }

@@ -48,40 +48,41 @@ const (
 // lists all types that will satisfy the interface.
 type Message interface {
 	// These types satisfy this interface:
-	//   - OK
-	//   - Error
-	//   - Ping
-	//   - Test
-	//   - DeviceList
-	//   - DeviceAdded
-	//   - DeviceRemoved
-	//   - RequestDeviceList
-	//   - StopDeviceCmd
-	//   - StopAllDevices
-	//   - StartScanning
-	//   - StopScanning
-	//   - ScanningFinished
-	//   - RequestLog
-	//   - Log
-	//   - RequestServerInfo
-	//   - ServerInfo
-	//   - FleshlightLaunchFW12Cmd
-	//   - LovenseCmd
-	//   - SingleMotorVibrateCmd
-	//   - KiirooCmd
-	//   - RawReadCmd
-	//   - RawWriteCmd
-	//   - RawSubscribeCmd
-	//   - RawUnsubscribeCmd
-	//   - RawReading
-	//   - VorzeA10CycloneCmd
-	//   - VibrateCmd
-	//   - RotateCmd
-	//   - LinearCmd
-	//   - BatteryLevelCmd
-	//   - BatteryLevelReading
-	//   - RSSILevelCmd
-	//   - RSSILevelReading
+	//    - OK
+	//    - Error
+	//    - Ping
+	//    - Test
+	//    - DeviceList
+	//    - DeviceAdded
+	//    - DeviceRemoved
+	//    - RequestDeviceList
+	//    - StopDeviceCmd
+	//    - StopAllDevices
+	//    - StartScanning
+	//    - StopScanning
+	//    - ScanningFinished
+	//    - RequestLog
+	//    - Log
+	//    - RequestServerInfo
+	//    - ServerInfo
+	//    - FleshlightLaunchFW12Cmd
+	//    - LovenseCmd
+	//    - SingleMotorVibrateCmd
+	//    - KiirooCmd
+	//    - RawReadCmd
+	//    - RawWriteCmd
+	//    - RawSubscribeCmd
+	//    - RawUnsubscribeCmd
+	//    - RawReading
+	//    - VorzeA10CycloneCmd
+	//    - VibrateCmd
+	//    - RotateCmd
+	//    - LinearCmd
+	//    - BatteryLevelCmd
+	//    - BatteryLevelReading
+	//    - RSSILevelCmd
+	//    - RSSILevelReading
+
 	// MessageType returns the message's type (object key).
 	MessageType() MessageType
 }
