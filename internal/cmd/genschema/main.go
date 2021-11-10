@@ -36,9 +36,7 @@ func main() {
 	}
 
 	tmpl := template.New("")
-	tmpl = tmpl.Funcs(template.FuncMap{
-		"Comment": tmplutil.Comment,
-	})
+	tmpl = tmpl.Funcs(tmplutil.Funcs)
 	tmpl = template.Must(tmpl.Parse(tmplGo))
 
 	var buf bytes.Buffer

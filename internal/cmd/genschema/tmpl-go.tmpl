@@ -33,6 +33,10 @@ type Message interface {
 	{{ range .Fields -}}
 	//    - {{ .GoName }}
 	{{ end }}
+
+	// MessageID returns the message's ID, or 0 if the message is a system
+	// message.
+	MessageID() ID
 	// MessageType returns the message's type (object key).
 	MessageType() MessageType
 }
@@ -41,8 +45,27 @@ type Message interface {
 type Messages map[MessageType]Message
 
 {{ range .Fields -}}
-func ({{ .GoName }}) MessageType() MessageType { return {{ .GoName }}Message }
+{{ $recv := FirstLetter .GoName }}
+
+// MessageID implements Message.
+func ({{ $recv }} *{{ .GoName }}) MessageID() ID { return ID({{ $recv }}.ID) }
+
+// MessageType implements Message.
+func ({{ $recv }} *{{ .GoName }}) MessageType() MessageType { return {{ .GoName }}Message }
 {{ end -}}
+
+var knownMessages = map[MessageType]func() Message {
+	{{ range .Fields -}}
+	{{ .GoName }}Message: func() Message { return &{{ .GoName }}{} },
+	{{ end -}}
+}
+
+// RegisterMessage registers a new message type. It call the constructor once to
+// know the message type.
+func RegisterMessage(new func() Message) {
+	msg := new()
+	knownMessages[msg.MessageType()] = new
+}
 
 // CreateMessages creates a Messages object from the given messages.
 func CreateMessages(msgs ...Message) Messages {

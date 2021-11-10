@@ -7,12 +7,20 @@ import (
 	"strings"
 	"sync"
 	"text/template"
+	"unicode"
+	"unicode/utf8"
 )
 
 var (
 	renderTmpls = map[string]*template.Template{}
 	tmplMutex   sync.Mutex
 )
+
+// Funcs contains the exported tmplutil functions.
+var Funcs = template.FuncMap{
+	"Comment":     Comment,
+	"FirstLetter": FirstLetter,
+}
 
 // Render renders the given template string with the given key-value pair.
 func Render(w io.Writer, tmpl string, v interface{}) {
@@ -33,6 +41,16 @@ func Render(w io.Writer, tmpl string, v interface{}) {
 	if err := renderTmpl.ExecuteTemplate(w, "(anonymous)", v); err != nil {
 		log.Panicln("inline render fail:", err)
 	}
+}
+
+// FirstLetter returns the first letter in lower-case.
+func FirstLetter(p string) string {
+	r, sz := utf8.DecodeRuneInString(p)
+	if sz > 0 && r != utf8.RuneError {
+		return string(unicode.ToLower(r))
+	}
+
+	return string(p[0]) // fallback
 }
 
 // String renders the given template to a string.

@@ -85,6 +85,9 @@ type Message interface {
 	//    - RSSILevelCmd
 	//    - RSSILevelReading
 
+	// MessageID returns the message's ID, or 0 if the message is a system
+	// message.
+	MessageID() ID
 	// MessageType returns the message's type (object key).
 	MessageType() MessageType
 }
@@ -92,40 +95,253 @@ type Message interface {
 // Messages is the large messages object that's passed around.
 type Messages map[MessageType]Message
 
-func (OK) MessageType() MessageType                      { return OKMessage }
-func (Error) MessageType() MessageType                   { return ErrorMessage }
-func (Ping) MessageType() MessageType                    { return PingMessage }
-func (Test) MessageType() MessageType                    { return TestMessage }
-func (DeviceList) MessageType() MessageType              { return DeviceListMessage }
-func (DeviceAdded) MessageType() MessageType             { return DeviceAddedMessage }
-func (DeviceRemoved) MessageType() MessageType           { return DeviceRemovedMessage }
-func (RequestDeviceList) MessageType() MessageType       { return RequestDeviceListMessage }
-func (StopDeviceCmd) MessageType() MessageType           { return StopDeviceCmdMessage }
-func (StopAllDevices) MessageType() MessageType          { return StopAllDevicesMessage }
-func (StartScanning) MessageType() MessageType           { return StartScanningMessage }
-func (StopScanning) MessageType() MessageType            { return StopScanningMessage }
-func (ScanningFinished) MessageType() MessageType        { return ScanningFinishedMessage }
-func (RequestLog) MessageType() MessageType              { return RequestLogMessage }
-func (Log) MessageType() MessageType                     { return LogMessage }
-func (RequestServerInfo) MessageType() MessageType       { return RequestServerInfoMessage }
-func (ServerInfo) MessageType() MessageType              { return ServerInfoMessage }
-func (FleshlightLaunchFW12Cmd) MessageType() MessageType { return FleshlightLaunchFW12CmdMessage }
-func (LovenseCmd) MessageType() MessageType              { return LovenseCmdMessage }
-func (SingleMotorVibrateCmd) MessageType() MessageType   { return SingleMotorVibrateCmdMessage }
-func (KiirooCmd) MessageType() MessageType               { return KiirooCmdMessage }
-func (RawReadCmd) MessageType() MessageType              { return RawReadCmdMessage }
-func (RawWriteCmd) MessageType() MessageType             { return RawWriteCmdMessage }
-func (RawSubscribeCmd) MessageType() MessageType         { return RawSubscribeCmdMessage }
-func (RawUnsubscribeCmd) MessageType() MessageType       { return RawUnsubscribeCmdMessage }
-func (RawReading) MessageType() MessageType              { return RawReadingMessage }
-func (VorzeA10CycloneCmd) MessageType() MessageType      { return VorzeA10CycloneCmdMessage }
-func (VibrateCmd) MessageType() MessageType              { return VibrateCmdMessage }
-func (RotateCmd) MessageType() MessageType               { return RotateCmdMessage }
-func (LinearCmd) MessageType() MessageType               { return LinearCmdMessage }
-func (BatteryLevelCmd) MessageType() MessageType         { return BatteryLevelCmdMessage }
-func (BatteryLevelReading) MessageType() MessageType     { return BatteryLevelReadingMessage }
-func (RSSILevelCmd) MessageType() MessageType            { return RSSILevelCmdMessage }
-func (RSSILevelReading) MessageType() MessageType        { return RSSILevelReadingMessage }
+// MessageID implements Message.
+func (o *OK) MessageID() ID { return ID(o.ID) }
+
+// MessageType implements Message.
+func (o *OK) MessageType() MessageType { return OKMessage }
+
+// MessageID implements Message.
+func (e *Error) MessageID() ID { return ID(e.ID) }
+
+// MessageType implements Message.
+func (e *Error) MessageType() MessageType { return ErrorMessage }
+
+// MessageID implements Message.
+func (p *Ping) MessageID() ID { return ID(p.ID) }
+
+// MessageType implements Message.
+func (p *Ping) MessageType() MessageType { return PingMessage }
+
+// MessageID implements Message.
+func (t *Test) MessageID() ID { return ID(t.ID) }
+
+// MessageType implements Message.
+func (t *Test) MessageType() MessageType { return TestMessage }
+
+// MessageID implements Message.
+func (d *DeviceList) MessageID() ID { return ID(d.ID) }
+
+// MessageType implements Message.
+func (d *DeviceList) MessageType() MessageType { return DeviceListMessage }
+
+// MessageID implements Message.
+func (d *DeviceAdded) MessageID() ID { return ID(d.ID) }
+
+// MessageType implements Message.
+func (d *DeviceAdded) MessageType() MessageType { return DeviceAddedMessage }
+
+// MessageID implements Message.
+func (d *DeviceRemoved) MessageID() ID { return ID(d.ID) }
+
+// MessageType implements Message.
+func (d *DeviceRemoved) MessageType() MessageType { return DeviceRemovedMessage }
+
+// MessageID implements Message.
+func (r *RequestDeviceList) MessageID() ID { return ID(r.ID) }
+
+// MessageType implements Message.
+func (r *RequestDeviceList) MessageType() MessageType { return RequestDeviceListMessage }
+
+// MessageID implements Message.
+func (s *StopDeviceCmd) MessageID() ID { return ID(s.ID) }
+
+// MessageType implements Message.
+func (s *StopDeviceCmd) MessageType() MessageType { return StopDeviceCmdMessage }
+
+// MessageID implements Message.
+func (s *StopAllDevices) MessageID() ID { return ID(s.ID) }
+
+// MessageType implements Message.
+func (s *StopAllDevices) MessageType() MessageType { return StopAllDevicesMessage }
+
+// MessageID implements Message.
+func (s *StartScanning) MessageID() ID { return ID(s.ID) }
+
+// MessageType implements Message.
+func (s *StartScanning) MessageType() MessageType { return StartScanningMessage }
+
+// MessageID implements Message.
+func (s *StopScanning) MessageID() ID { return ID(s.ID) }
+
+// MessageType implements Message.
+func (s *StopScanning) MessageType() MessageType { return StopScanningMessage }
+
+// MessageID implements Message.
+func (s *ScanningFinished) MessageID() ID { return ID(s.ID) }
+
+// MessageType implements Message.
+func (s *ScanningFinished) MessageType() MessageType { return ScanningFinishedMessage }
+
+// MessageID implements Message.
+func (r *RequestLog) MessageID() ID { return ID(r.ID) }
+
+// MessageType implements Message.
+func (r *RequestLog) MessageType() MessageType { return RequestLogMessage }
+
+// MessageID implements Message.
+func (l *Log) MessageID() ID { return ID(l.ID) }
+
+// MessageType implements Message.
+func (l *Log) MessageType() MessageType { return LogMessage }
+
+// MessageID implements Message.
+func (r *RequestServerInfo) MessageID() ID { return ID(r.ID) }
+
+// MessageType implements Message.
+func (r *RequestServerInfo) MessageType() MessageType { return RequestServerInfoMessage }
+
+// MessageID implements Message.
+func (s *ServerInfo) MessageID() ID { return ID(s.ID) }
+
+// MessageType implements Message.
+func (s *ServerInfo) MessageType() MessageType { return ServerInfoMessage }
+
+// MessageID implements Message.
+func (f *FleshlightLaunchFW12Cmd) MessageID() ID { return ID(f.ID) }
+
+// MessageType implements Message.
+func (f *FleshlightLaunchFW12Cmd) MessageType() MessageType { return FleshlightLaunchFW12CmdMessage }
+
+// MessageID implements Message.
+func (l *LovenseCmd) MessageID() ID { return ID(l.ID) }
+
+// MessageType implements Message.
+func (l *LovenseCmd) MessageType() MessageType { return LovenseCmdMessage }
+
+// MessageID implements Message.
+func (s *SingleMotorVibrateCmd) MessageID() ID { return ID(s.ID) }
+
+// MessageType implements Message.
+func (s *SingleMotorVibrateCmd) MessageType() MessageType { return SingleMotorVibrateCmdMessage }
+
+// MessageID implements Message.
+func (k *KiirooCmd) MessageID() ID { return ID(k.ID) }
+
+// MessageType implements Message.
+func (k *KiirooCmd) MessageType() MessageType { return KiirooCmdMessage }
+
+// MessageID implements Message.
+func (r *RawReadCmd) MessageID() ID { return ID(r.ID) }
+
+// MessageType implements Message.
+func (r *RawReadCmd) MessageType() MessageType { return RawReadCmdMessage }
+
+// MessageID implements Message.
+func (r *RawWriteCmd) MessageID() ID { return ID(r.ID) }
+
+// MessageType implements Message.
+func (r *RawWriteCmd) MessageType() MessageType { return RawWriteCmdMessage }
+
+// MessageID implements Message.
+func (r *RawSubscribeCmd) MessageID() ID { return ID(r.ID) }
+
+// MessageType implements Message.
+func (r *RawSubscribeCmd) MessageType() MessageType { return RawSubscribeCmdMessage }
+
+// MessageID implements Message.
+func (r *RawUnsubscribeCmd) MessageID() ID { return ID(r.ID) }
+
+// MessageType implements Message.
+func (r *RawUnsubscribeCmd) MessageType() MessageType { return RawUnsubscribeCmdMessage }
+
+// MessageID implements Message.
+func (r *RawReading) MessageID() ID { return ID(r.ID) }
+
+// MessageType implements Message.
+func (r *RawReading) MessageType() MessageType { return RawReadingMessage }
+
+// MessageID implements Message.
+func (v *VorzeA10CycloneCmd) MessageID() ID { return ID(v.ID) }
+
+// MessageType implements Message.
+func (v *VorzeA10CycloneCmd) MessageType() MessageType { return VorzeA10CycloneCmdMessage }
+
+// MessageID implements Message.
+func (v *VibrateCmd) MessageID() ID { return ID(v.ID) }
+
+// MessageType implements Message.
+func (v *VibrateCmd) MessageType() MessageType { return VibrateCmdMessage }
+
+// MessageID implements Message.
+func (r *RotateCmd) MessageID() ID { return ID(r.ID) }
+
+// MessageType implements Message.
+func (r *RotateCmd) MessageType() MessageType { return RotateCmdMessage }
+
+// MessageID implements Message.
+func (l *LinearCmd) MessageID() ID { return ID(l.ID) }
+
+// MessageType implements Message.
+func (l *LinearCmd) MessageType() MessageType { return LinearCmdMessage }
+
+// MessageID implements Message.
+func (b *BatteryLevelCmd) MessageID() ID { return ID(b.ID) }
+
+// MessageType implements Message.
+func (b *BatteryLevelCmd) MessageType() MessageType { return BatteryLevelCmdMessage }
+
+// MessageID implements Message.
+func (b *BatteryLevelReading) MessageID() ID { return ID(b.ID) }
+
+// MessageType implements Message.
+func (b *BatteryLevelReading) MessageType() MessageType { return BatteryLevelReadingMessage }
+
+// MessageID implements Message.
+func (r *RSSILevelCmd) MessageID() ID { return ID(r.ID) }
+
+// MessageType implements Message.
+func (r *RSSILevelCmd) MessageType() MessageType { return RSSILevelCmdMessage }
+
+// MessageID implements Message.
+func (r *RSSILevelReading) MessageID() ID { return ID(r.ID) }
+
+// MessageType implements Message.
+func (r *RSSILevelReading) MessageType() MessageType { return RSSILevelReadingMessage }
+
+var knownMessages = map[MessageType]func() Message{
+	OKMessage:                      func() Message { return &OK{} },
+	ErrorMessage:                   func() Message { return &Error{} },
+	PingMessage:                    func() Message { return &Ping{} },
+	TestMessage:                    func() Message { return &Test{} },
+	DeviceListMessage:              func() Message { return &DeviceList{} },
+	DeviceAddedMessage:             func() Message { return &DeviceAdded{} },
+	DeviceRemovedMessage:           func() Message { return &DeviceRemoved{} },
+	RequestDeviceListMessage:       func() Message { return &RequestDeviceList{} },
+	StopDeviceCmdMessage:           func() Message { return &StopDeviceCmd{} },
+	StopAllDevicesMessage:          func() Message { return &StopAllDevices{} },
+	StartScanningMessage:           func() Message { return &StartScanning{} },
+	StopScanningMessage:            func() Message { return &StopScanning{} },
+	ScanningFinishedMessage:        func() Message { return &ScanningFinished{} },
+	RequestLogMessage:              func() Message { return &RequestLog{} },
+	LogMessage:                     func() Message { return &Log{} },
+	RequestServerInfoMessage:       func() Message { return &RequestServerInfo{} },
+	ServerInfoMessage:              func() Message { return &ServerInfo{} },
+	FleshlightLaunchFW12CmdMessage: func() Message { return &FleshlightLaunchFW12Cmd{} },
+	LovenseCmdMessage:              func() Message { return &LovenseCmd{} },
+	SingleMotorVibrateCmdMessage:   func() Message { return &SingleMotorVibrateCmd{} },
+	KiirooCmdMessage:               func() Message { return &KiirooCmd{} },
+	RawReadCmdMessage:              func() Message { return &RawReadCmd{} },
+	RawWriteCmdMessage:             func() Message { return &RawWriteCmd{} },
+	RawSubscribeCmdMessage:         func() Message { return &RawSubscribeCmd{} },
+	RawUnsubscribeCmdMessage:       func() Message { return &RawUnsubscribeCmd{} },
+	RawReadingMessage:              func() Message { return &RawReading{} },
+	VorzeA10CycloneCmdMessage:      func() Message { return &VorzeA10CycloneCmd{} },
+	VibrateCmdMessage:              func() Message { return &VibrateCmd{} },
+	RotateCmdMessage:               func() Message { return &RotateCmd{} },
+	LinearCmdMessage:               func() Message { return &LinearCmd{} },
+	BatteryLevelCmdMessage:         func() Message { return &BatteryLevelCmd{} },
+	BatteryLevelReadingMessage:     func() Message { return &BatteryLevelReading{} },
+	RSSILevelCmdMessage:            func() Message { return &RSSILevelCmd{} },
+	RSSILevelReadingMessage:        func() Message { return &RSSILevelReading{} },
+}
+
+// RegisterMessage registers a new message type. It call the constructor once to
+// know the message type.
+func RegisterMessage(new func() Message) {
+	msg := new()
+	knownMessages[msg.MessageType()] = new
+}
 
 // CreateMessages creates a Messages object from the given messages.
 func CreateMessages(msgs ...Message) Messages {
