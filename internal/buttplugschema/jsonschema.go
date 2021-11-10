@@ -64,6 +64,9 @@ func (p *properties) UnmarshalJSON(b []byte) error {
 }
 
 func (p *properties) Each(f func(k string, v *jsonschema.Schema)) {
+	if p == nil {
+		return
+	}
 	for _, key := range p.keys {
 		f(key, p.Properties[key])
 	}

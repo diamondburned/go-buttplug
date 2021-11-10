@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/pkg/errors"
 	"github.com/qri-io/jsonpointer"
@@ -144,8 +146,6 @@ func (r *resolver) add(name namePiece, typ *jsonschema.Schema) Type {
 	}
 
 	if refID := refID(typ); refID != "" {
-		name.export = true // always
-
 		p, err := jsonpointer.Parse(refID)
 		if err != nil {
 			log.Printf("pointer %q invalid: %s", string(refID), err)
@@ -197,13 +197,31 @@ resolve:
 }
 
 func (r *resolver) addForce(name namePiece, typ *jsonschema.Schema) Type {
-	switch typ.TopLevelType() {
+	jsonType := typ.TopLevelType()
+
+	properties, ok := typ.JSONProp("properties").(*properties)
+	if ok && jsonType == "unknown" {
+		// This is missing sometimes for some weird reason.
+		jsonType = "object"
+	}
+
+	consts, ok := typ.JSONProp("enum").(*jsonschema.Enum)
+	if ok && jsonType == "unknown" {
+		// This is also missing sometimes.
+		jsonType = "enum"
+	}
+
+	switch jsonType {
 	case "object":
 		obj := ObjectType{
 			BaseType: newBaseType(name, "struct{}", typ),
 		}
-		if _, ok := typ.JSONProp("anyOf").(*jsonschema.AnyOf); ok {
-			log.Printf("%s is anyOf", name)
+		if anyOf, ok := typ.JSONProp("anyOf").(*jsonschema.AnyOf); ok {
+			t, ok := r.add(unnamed, (*anyOf)[0]).(ObjectType)
+			if ok {
+				obj.Fields = t.Fields
+				return obj
+			}
 			return nil
 		}
 		var requiredFields map[string]bool
@@ -213,23 +231,21 @@ func (r *resolver) addForce(name namePiece, typ *jsonschema.Schema) Type {
 				requiredFields[req] = true
 			}
 		}
-		if properties, ok := typ.JSONProp("properties").(*properties); ok {
-			parentName := name
-			properties.Each(func(name string, value *jsonschema.Schema) {
-				t := r.add(unnamed, value)
-				if t == nil {
-					log.Printf("%s skipping field %s", parentName, name)
-					return
-				}
+		parentName := name
+		properties.Each(func(name string, value *jsonschema.Schema) {
+			t := r.add(unnamed, value)
+			if t == nil {
+				log.Printf("%s skipping field %s", parentName, name)
+				return
+			}
 
-				obj.Fields = append(obj.Fields, Field{
-					Type:      t,
-					FieldName: transformGoName(name),
-					JSONName:  name,
-					Required:  requiredFields[name],
-				})
+			obj.Fields = append(obj.Fields, Field{
+				Type:      t,
+				FieldName: transformGoName(name),
+				JSONName:  name,
+				Required:  requiredFields[name],
 			})
-		}
+		})
 		return obj
 
 	case "string":
@@ -280,6 +296,28 @@ func (r *resolver) addForce(name namePiece, typ *jsonschema.Schema) Type {
 			// log.Printf("%s: DIDN'T GET array %s", name, innerName)
 		}
 		return nil
+
+	case "enum":
+		enum := EnumType{
+			BaseType: newBaseType(name, "string", typ),
+		}
+		if consts != nil {
+			for _, v := range *consts {
+				enum.Values = append(enum.Values, EnumValue{
+					GoName: exportGoName(transformGoName(v.String())),
+					Value:  v.String(),
+				})
+			}
+			return enum
+		}
+		log.Println(name, "no field 'enum'")
+		return nil
+
+	case "boolean":
+		return BooleanType{
+			BaseType: newBaseType(name, "bool", typ),
+		}
+
 	default:
 		log.Println(name, "unknown type", typ.TopLevelType())
 		return nil
@@ -293,6 +331,15 @@ var cases = strings.NewReplacer(
 
 func transformGoName(name string) string {
 	return cases.Replace(name)
+}
+
+func exportGoName(name string) string {
+	r, sz := utf8.DecodeRuneInString(name)
+	if sz > 0 && r != utf8.RuneError {
+		return name
+	}
+
+	return string(unicode.ToUpper(r)) + name[sz:]
 }
 
 func newBaseType(name namePiece, goType string, typ *jsonschema.Schema) BaseType {

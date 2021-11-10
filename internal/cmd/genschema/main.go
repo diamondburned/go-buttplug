@@ -48,6 +48,8 @@ func main() {
 	render("", nil)
 
 	p := buttplugschema.Parse(s)
+	render("messages", p.Messages)
+
 	for _, typ := range p.Types {
 		switch typ := typ.(type) {
 		case buttplugschema.IntegerType:
@@ -60,6 +62,10 @@ func main() {
 			render("object", typ)
 		case buttplugschema.ArrayType:
 			render("array", typ)
+		case buttplugschema.BooleanType:
+			render("boolean", typ)
+		default:
+			log.Printf("not rendering %T", typ)
 		}
 	}
 

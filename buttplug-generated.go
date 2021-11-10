@@ -2,8 +2,151 @@
 
 package buttplug
 
+// MessageType identifies a message type in a Messages object. It is also the
+// object key in the Messages object.
+type MessageType string
+
+const (
+	OKType                      = "Ok"
+	ErrorType                   = "Error"
+	PingType                    = "Ping"
+	TestType                    = "Test"
+	DeviceListType              = "DeviceList"
+	DeviceAddedType             = "DeviceAdded"
+	DeviceRemovedType           = "DeviceRemoved"
+	RequestDeviceListType       = "RequestDeviceList"
+	StopDeviceCmdType           = "StopDeviceCmd"
+	StopAllDevicesType          = "StopAllDevices"
+	StartScanningType           = "StartScanning"
+	StopScanningType            = "StopScanning"
+	ScanningFinishedType        = "ScanningFinished"
+	RequestLogType              = "RequestLog"
+	LogType                     = "Log"
+	RequestServerInfoType       = "RequestServerInfo"
+	ServerInfoType              = "ServerInfo"
+	FleshlightLaunchFW12CmdType = "FleshlightLaunchFW12Cmd"
+	LovenseCmdType              = "LovenseCmd"
+	SingleMotorVibrateCmdType   = "SingleMotorVibrateCmd"
+	KiirooCmdType               = "KiirooCmd"
+	RawReadCmdType              = "RawReadCmd"
+	RawWriteCmdType             = "RawWriteCmd"
+	RawSubscribeCmdType         = "RawSubscribeCmd"
+	RawUnsubscribeCmdType       = "RawUnsubscribeCmd"
+	RawReadingType              = "RawReading"
+	VorzeA10CycloneCmdType      = "VorzeA10CycloneCmd"
+	VibrateCmdType              = "VibrateCmd"
+	RotateCmdType               = "RotateCmd"
+	LinearCmdType               = "LinearCmd"
+	BatteryLevelCmdType         = "BatteryLevelCmd"
+	BatteryLevelReadingType     = "BatteryLevelReading"
+	RSSILevelCmdType            = "RSSILevelCmd"
+	RSSILevelReadingType        = "RSSILevelReading"
+)
+
+// Message is an interface ethat all messages will satisfy. All types that are
+// inside MessageType will implement the interface. Inside this type declaration
+// lists all types that will satisfy the interface.
+type Message interface {
+	// These types satisfy this interface:
+	//   - OK
+	//   - Error
+	//   - Ping
+	//   - Test
+	//   - DeviceList
+	//   - DeviceAdded
+	//   - DeviceRemoved
+	//   - RequestDeviceList
+	//   - StopDeviceCmd
+	//   - StopAllDevices
+	//   - StartScanning
+	//   - StopScanning
+	//   - ScanningFinished
+	//   - RequestLog
+	//   - Log
+	//   - RequestServerInfo
+	//   - ServerInfo
+	//   - FleshlightLaunchFW12Cmd
+	//   - LovenseCmd
+	//   - SingleMotorVibrateCmd
+	//   - KiirooCmd
+	//   - RawReadCmd
+	//   - RawWriteCmd
+	//   - RawSubscribeCmd
+	//   - RawUnsubscribeCmd
+	//   - RawReading
+	//   - VorzeA10CycloneCmd
+	//   - VibrateCmd
+	//   - RotateCmd
+	//   - LinearCmd
+	//   - BatteryLevelCmd
+	//   - BatteryLevelReading
+	//   - RSSILevelCmd
+	//   - RSSILevelReading
+	// MessageType returns the message's type (object key).
+	MessageType() MessageType
+}
+
+// Messages is the large messages object that's passed around.
+type Messages map[MessageType]Message
+
+func (OK) MessageType() MessageType                      { return OKType }
+func (Error) MessageType() MessageType                   { return ErrorType }
+func (Ping) MessageType() MessageType                    { return PingType }
+func (Test) MessageType() MessageType                    { return TestType }
+func (DeviceList) MessageType() MessageType              { return DeviceListType }
+func (DeviceAdded) MessageType() MessageType             { return DeviceAddedType }
+func (DeviceRemoved) MessageType() MessageType           { return DeviceRemovedType }
+func (RequestDeviceList) MessageType() MessageType       { return RequestDeviceListType }
+func (StopDeviceCmd) MessageType() MessageType           { return StopDeviceCmdType }
+func (StopAllDevices) MessageType() MessageType          { return StopAllDevicesType }
+func (StartScanning) MessageType() MessageType           { return StartScanningType }
+func (StopScanning) MessageType() MessageType            { return StopScanningType }
+func (ScanningFinished) MessageType() MessageType        { return ScanningFinishedType }
+func (RequestLog) MessageType() MessageType              { return RequestLogType }
+func (Log) MessageType() MessageType                     { return LogType }
+func (RequestServerInfo) MessageType() MessageType       { return RequestServerInfoType }
+func (ServerInfo) MessageType() MessageType              { return ServerInfoType }
+func (FleshlightLaunchFW12Cmd) MessageType() MessageType { return FleshlightLaunchFW12CmdType }
+func (LovenseCmd) MessageType() MessageType              { return LovenseCmdType }
+func (SingleMotorVibrateCmd) MessageType() MessageType   { return SingleMotorVibrateCmdType }
+func (KiirooCmd) MessageType() MessageType               { return KiirooCmdType }
+func (RawReadCmd) MessageType() MessageType              { return RawReadCmdType }
+func (RawWriteCmd) MessageType() MessageType             { return RawWriteCmdType }
+func (RawSubscribeCmd) MessageType() MessageType         { return RawSubscribeCmdType }
+func (RawUnsubscribeCmd) MessageType() MessageType       { return RawUnsubscribeCmdType }
+func (RawReading) MessageType() MessageType              { return RawReadingType }
+func (VorzeA10CycloneCmd) MessageType() MessageType      { return VorzeA10CycloneCmdType }
+func (VibrateCmd) MessageType() MessageType              { return VibrateCmdType }
+func (RotateCmd) MessageType() MessageType               { return RotateCmdType }
+func (LinearCmd) MessageType() MessageType               { return LinearCmdType }
+func (BatteryLevelCmd) MessageType() MessageType         { return BatteryLevelCmdType }
+func (BatteryLevelReading) MessageType() MessageType     { return BatteryLevelReadingType }
+func (RSSILevelCmd) MessageType() MessageType            { return RSSILevelCmdType }
+func (RSSILevelReading) MessageType() MessageType        { return RSSILevelReadingType }
+
+// CreateMessages creates a Messages object from the given messages.
+func CreateMessages(msgs ...Message) Messages {
+	obj := make(Messages, len(msgs))
+	for _, msg := range msgs {
+		obj[msg.MessageType()] = msg
+	}
+	return obj
+}
+
 // User-set id for the message. 0 denotes system message and is reserved.
 type ID int // [0, 4294967295]
+
+// Message types that are expected to have an Id and nothing else.
+type IDMessage struct {
+	// User-set id for the message. 0 denotes system message and is reserved.
+	ID ID `json:"Id"`
+}
+
+// Signifies successful processing of the message indicated by the id.
+type OK struct {
+	// User-set id for the message. 0 denotes system message and is reserved.
+	ID ID `json:"Id"`
+}
 
 // Signifies the server encountered an error while processing the message
 // indicated by the id.
@@ -12,6 +155,12 @@ type Error struct {
 	ID           ID      `json:"Id"`
 	ErrorMessage string  `json:"ErrorMessage"`
 	ErrorCode    float64 `json:"ErrorCode"`
+}
+
+// Connection keep-alive message.
+type Ping struct {
+	// User-set id for the message. 0 denotes system message and is reserved.
+	ID ID `json:"Id"`
 }
 
 // Used for connection/application testing. Causes server to echo back the
@@ -120,6 +269,28 @@ type DeviceAdded struct {
 	DeviceMessages interface{} `json:"DeviceMessages"`
 }
 
+type DeviceIndexMessage struct {
+	// User-set id for the message. 0 denotes system message and is reserved.
+	ID ID `json:"Id"`
+	// Index used for referencing the device in device messages.
+	DeviceIndex DeviceIndex `json:"DeviceIndex"`
+}
+
+// Notifies client that a device of a certain type has been removed from the
+// server.
+type DeviceRemoved struct {
+	// User-set id for the message. 0 denotes system message and is reserved.
+	ID ID `json:"Id"`
+	// Index used for referencing the device in device messages.
+	DeviceIndex DeviceIndex `json:"DeviceIndex"`
+}
+
+// Request for the server to send a list of devices to the client.
+type RequestDeviceList struct {
+	// User-set id for the message. 0 denotes system message and is reserved.
+	ID ID `json:"Id"`
+}
+
 // Stops the all actions currently being taken by a device.
 type StopDeviceCmd struct {
 	// User-set id for the message. 0 denotes system message and is reserved.
@@ -128,10 +299,45 @@ type StopDeviceCmd struct {
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 }
 
+// Stops all actions currently being taken by all connected devices.
+type StopAllDevices struct {
+	// User-set id for the message. 0 denotes system message and is reserved.
+	ID ID `json:"Id"`
+}
+
+// Request for the server to start scanning for new devices.
+type StartScanning struct {
+	// User-set id for the message. 0 denotes system message and is reserved.
+	ID ID `json:"Id"`
+}
+
+// Request for the server to stop scanning for new devices.
+type StopScanning struct {
+	// User-set id for the message. 0 denotes system message and is reserved.
+	ID ID `json:"Id"`
+}
+
+// Message sent by the server that is not in direct reply to a message send from
+// the client, and always uses system Id.
+type SystemIDMessage struct {
+	// Used for non-direct-reply messages that can only be sent from server to
+	// client, using the reserved system message Id of 0.
+	ID SystemID `json:"Id"`
+}
+
+// Server notification to client that scanning has ended.
+type ScanningFinished struct {
+	// Used for non-direct-reply messages that can only be sent from server to
+	// client, using the reserved system message Id of 0.
+	ID SystemID `json:"Id"`
+}
+
 // Request for server to stream log messages of a certain level to client.
 type RequestLog struct {
 	// User-set id for the message. 0 denotes system message and is reserved.
 	ID ID `json:"Id"`
+	// Maximum level of log message to receive.
+	LogLevel string `json:"LogLevel"`
 }
 
 // Log message from the server.
@@ -139,6 +345,8 @@ type Log struct {
 	// Used for non-direct-reply messages that can only be sent from server to
 	// client, using the reserved system message Id of 0.
 	ID SystemID `json:"Id"`
+	// Log level of message.
+	LogLevel string `json:"LogLevel"`
 	// Log message from server.
 	LogMessage string `json:"LogMessage"`
 }
@@ -229,6 +437,8 @@ type RawReadCmd struct {
 	// Amount of data to read from device, 0 to exhaust whatever is in immediate
 	// buffer
 	Length int `json:"Length"`
+	// If true, then wait until Length amount of data is available.
+	WaitForData bool `json:"WaitForData"`
 }
 
 // Sends a raw byte array to a device. Should only be used for
@@ -242,6 +452,9 @@ type RawWriteCmd struct {
 	Endpoint string `json:"Endpoint"`
 	// Raw byte string to send to device.
 	Data []int `json:"Data"`
+	// If true, BLE writes will use WriteWithResponse. Value ignored for all
+	// other types.
+	WriteWithResponse bool `json:"WriteWithResponse"`
 }
 
 // Subscribe to an endpoint on a device to receive raw info back.
@@ -285,6 +498,9 @@ type VorzeA10CycloneCmd struct {
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 	// Rotation speed command for the Cyclone.
 	Speed int `json:"Speed"`
+	// True for clockwise rotation (in relation to device facing user), false
+	// for Counter-clockwise
+	Clockwise bool `json:"Clockwise"`
 }
 
 // Sends a vibrate command to a device that supports vibration.
@@ -318,6 +534,9 @@ type RotateCmd struct {
 		// Rotation speed (floating point, 0 < x < 1), stepping will be device
 		// specific.
 		Speed float64 `json:"Speed"`
+		// Rotation direction (boolean). Not all devices have a concept of actual
+		// clockwise.
+		Clockwise bool `json:"Clockwise"`
 	} `json:"Rotations"`
 }
 

@@ -142,3 +142,20 @@ type OneOfType struct {
 	BaseType
 	Types []Type
 }
+
+// EnumType describes an enumeration of string values.
+type EnumType struct {
+	BaseType
+	Values []EnumValue
+}
+
+// EnumValue is an enum value.
+type EnumValue struct {
+	GoName string
+	Value  string
+}
+
+// BooleanType describes a boolean type.
+type BooleanType struct {
+	BaseType
+}

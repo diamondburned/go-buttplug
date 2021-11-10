@@ -2,6 +2,48 @@
 
 package buttplug
 
+{{ define "messages" }}
+// MessageType identifies a message type in a Messages object. It is also the
+// object key in the Messages object.
+type MessageType string
+
+const (
+	{{ range .Fields -}}
+	{{ .GoName }}Type = "{{ .SchemaName }}"
+	{{ end -}}
+)
+
+// Message is an interface ethat all messages will satisfy. All types that are
+// inside MessageType will implement the interface. Inside this type declaration
+// lists all types that will satisfy the interface.
+type Message interface {
+	// These types satisfy this interface:
+	{{ range .Fields -}}
+	//   - {{ .GoName }}
+	{{ end -}}
+
+	// MessageType returns the message's type (object key).
+	MessageType() MessageType
+}
+
+// Messages is the large messages object that's passed around.
+type Messages map[MessageType]Message
+
+{{ range .Fields -}}
+func ({{ .GoName }}) MessageType() MessageType { return {{ .GoName }}Type }
+{{ end -}}
+
+// CreateMessages creates a Messages object from the given messages.
+func CreateMessages(msgs ...Message) Messages {
+	obj := make(Messages, len(msgs))
+	for _, msg := range msgs {
+		obj[msg.MessageType()] = msg
+	}
+	return obj
+}
+
+{{ end }}
+
 {{ define "integer" }}
 {{ Comment .Description 0 }}
 type {{ .GoName }} int // {{ .LimitString }}
@@ -25,4 +67,9 @@ type {{ .GoName }} {{ .GoType }}
 {{ define "object" }}
 {{ Comment .Description 0 }}
 type {{ .GoName }} {{ .RawGoType }}
+{{ end }}
+
+{{ define "boolean" }}
+{{ Comment .Description 0 }}
+type {{ .GoName }} bool
 {{ end }}
