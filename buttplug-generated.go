@@ -9,40 +9,40 @@ import "encoding/json"
 type MessageType string
 
 const (
-	OKType                      MessageType = "Ok"
-	ErrorType                   MessageType = "Error"
-	PingType                    MessageType = "Ping"
-	TestType                    MessageType = "Test"
-	DeviceListType              MessageType = "DeviceList"
-	DeviceAddedType             MessageType = "DeviceAdded"
-	DeviceRemovedType           MessageType = "DeviceRemoved"
-	RequestDeviceListType       MessageType = "RequestDeviceList"
-	StopDeviceCmdType           MessageType = "StopDeviceCmd"
-	StopAllDevicesType          MessageType = "StopAllDevices"
-	StartScanningType           MessageType = "StartScanning"
-	StopScanningType            MessageType = "StopScanning"
-	ScanningFinishedType        MessageType = "ScanningFinished"
-	RequestLogType              MessageType = "RequestLog"
-	LogType                     MessageType = "Log"
-	RequestServerInfoType       MessageType = "RequestServerInfo"
-	ServerInfoType              MessageType = "ServerInfo"
-	FleshlightLaunchFW12CmdType MessageType = "FleshlightLaunchFW12Cmd"
-	LovenseCmdType              MessageType = "LovenseCmd"
-	SingleMotorVibrateCmdType   MessageType = "SingleMotorVibrateCmd"
-	KiirooCmdType               MessageType = "KiirooCmd"
-	RawReadCmdType              MessageType = "RawReadCmd"
-	RawWriteCmdType             MessageType = "RawWriteCmd"
-	RawSubscribeCmdType         MessageType = "RawSubscribeCmd"
-	RawUnsubscribeCmdType       MessageType = "RawUnsubscribeCmd"
-	RawReadingType              MessageType = "RawReading"
-	VorzeA10CycloneCmdType      MessageType = "VorzeA10CycloneCmd"
-	VibrateCmdType              MessageType = "VibrateCmd"
-	RotateCmdType               MessageType = "RotateCmd"
-	LinearCmdType               MessageType = "LinearCmd"
-	BatteryLevelCmdType         MessageType = "BatteryLevelCmd"
-	BatteryLevelReadingType     MessageType = "BatteryLevelReading"
-	RSSILevelCmdType            MessageType = "RSSILevelCmd"
-	RSSILevelReadingType        MessageType = "RSSILevelReading"
+	OKMessage                      MessageType = "Ok"
+	ErrorMessage                   MessageType = "Error"
+	PingMessage                    MessageType = "Ping"
+	TestMessage                    MessageType = "Test"
+	DeviceListMessage              MessageType = "DeviceList"
+	DeviceAddedMessage             MessageType = "DeviceAdded"
+	DeviceRemovedMessage           MessageType = "DeviceRemoved"
+	RequestDeviceListMessage       MessageType = "RequestDeviceList"
+	StopDeviceCmdMessage           MessageType = "StopDeviceCmd"
+	StopAllDevicesMessage          MessageType = "StopAllDevices"
+	StartScanningMessage           MessageType = "StartScanning"
+	StopScanningMessage            MessageType = "StopScanning"
+	ScanningFinishedMessage        MessageType = "ScanningFinished"
+	RequestLogMessage              MessageType = "RequestLog"
+	LogMessage                     MessageType = "Log"
+	RequestServerInfoMessage       MessageType = "RequestServerInfo"
+	ServerInfoMessage              MessageType = "ServerInfo"
+	FleshlightLaunchFW12CmdMessage MessageType = "FleshlightLaunchFW12Cmd"
+	LovenseCmdMessage              MessageType = "LovenseCmd"
+	SingleMotorVibrateCmdMessage   MessageType = "SingleMotorVibrateCmd"
+	KiirooCmdMessage               MessageType = "KiirooCmd"
+	RawReadCmdMessage              MessageType = "RawReadCmd"
+	RawWriteCmdMessage             MessageType = "RawWriteCmd"
+	RawSubscribeCmdMessage         MessageType = "RawSubscribeCmd"
+	RawUnsubscribeCmdMessage       MessageType = "RawUnsubscribeCmd"
+	RawReadingMessage              MessageType = "RawReading"
+	VorzeA10CycloneCmdMessage      MessageType = "VorzeA10CycloneCmd"
+	VibrateCmdMessage              MessageType = "VibrateCmd"
+	RotateCmdMessage               MessageType = "RotateCmd"
+	LinearCmdMessage               MessageType = "LinearCmd"
+	BatteryLevelCmdMessage         MessageType = "BatteryLevelCmd"
+	BatteryLevelReadingMessage     MessageType = "BatteryLevelReading"
+	RSSILevelCmdMessage            MessageType = "RSSILevelCmd"
+	RSSILevelReadingMessage        MessageType = "RSSILevelReading"
 )
 
 // Message is an interface ethat all messages will satisfy. All types that are
@@ -92,40 +92,40 @@ type Message interface {
 // Messages is the large messages object that's passed around.
 type Messages map[MessageType]Message
 
-func (OK) MessageType() MessageType                      { return OKType }
-func (Error) MessageType() MessageType                   { return ErrorType }
-func (Ping) MessageType() MessageType                    { return PingType }
-func (Test) MessageType() MessageType                    { return TestType }
-func (DeviceList) MessageType() MessageType              { return DeviceListType }
-func (DeviceAdded) MessageType() MessageType             { return DeviceAddedType }
-func (DeviceRemoved) MessageType() MessageType           { return DeviceRemovedType }
-func (RequestDeviceList) MessageType() MessageType       { return RequestDeviceListType }
-func (StopDeviceCmd) MessageType() MessageType           { return StopDeviceCmdType }
-func (StopAllDevices) MessageType() MessageType          { return StopAllDevicesType }
-func (StartScanning) MessageType() MessageType           { return StartScanningType }
-func (StopScanning) MessageType() MessageType            { return StopScanningType }
-func (ScanningFinished) MessageType() MessageType        { return ScanningFinishedType }
-func (RequestLog) MessageType() MessageType              { return RequestLogType }
-func (Log) MessageType() MessageType                     { return LogType }
-func (RequestServerInfo) MessageType() MessageType       { return RequestServerInfoType }
-func (ServerInfo) MessageType() MessageType              { return ServerInfoType }
-func (FleshlightLaunchFW12Cmd) MessageType() MessageType { return FleshlightLaunchFW12CmdType }
-func (LovenseCmd) MessageType() MessageType              { return LovenseCmdType }
-func (SingleMotorVibrateCmd) MessageType() MessageType   { return SingleMotorVibrateCmdType }
-func (KiirooCmd) MessageType() MessageType               { return KiirooCmdType }
-func (RawReadCmd) MessageType() MessageType              { return RawReadCmdType }
-func (RawWriteCmd) MessageType() MessageType             { return RawWriteCmdType }
-func (RawSubscribeCmd) MessageType() MessageType         { return RawSubscribeCmdType }
-func (RawUnsubscribeCmd) MessageType() MessageType       { return RawUnsubscribeCmdType }
-func (RawReading) MessageType() MessageType              { return RawReadingType }
-func (VorzeA10CycloneCmd) MessageType() MessageType      { return VorzeA10CycloneCmdType }
-func (VibrateCmd) MessageType() MessageType              { return VibrateCmdType }
-func (RotateCmd) MessageType() MessageType               { return RotateCmdType }
-func (LinearCmd) MessageType() MessageType               { return LinearCmdType }
-func (BatteryLevelCmd) MessageType() MessageType         { return BatteryLevelCmdType }
-func (BatteryLevelReading) MessageType() MessageType     { return BatteryLevelReadingType }
-func (RSSILevelCmd) MessageType() MessageType            { return RSSILevelCmdType }
-func (RSSILevelReading) MessageType() MessageType        { return RSSILevelReadingType }
+func (OK) MessageType() MessageType                      { return OKMessage }
+func (Error) MessageType() MessageType                   { return ErrorMessage }
+func (Ping) MessageType() MessageType                    { return PingMessage }
+func (Test) MessageType() MessageType                    { return TestMessage }
+func (DeviceList) MessageType() MessageType              { return DeviceListMessage }
+func (DeviceAdded) MessageType() MessageType             { return DeviceAddedMessage }
+func (DeviceRemoved) MessageType() MessageType           { return DeviceRemovedMessage }
+func (RequestDeviceList) MessageType() MessageType       { return RequestDeviceListMessage }
+func (StopDeviceCmd) MessageType() MessageType           { return StopDeviceCmdMessage }
+func (StopAllDevices) MessageType() MessageType          { return StopAllDevicesMessage }
+func (StartScanning) MessageType() MessageType           { return StartScanningMessage }
+func (StopScanning) MessageType() MessageType            { return StopScanningMessage }
+func (ScanningFinished) MessageType() MessageType        { return ScanningFinishedMessage }
+func (RequestLog) MessageType() MessageType              { return RequestLogMessage }
+func (Log) MessageType() MessageType                     { return LogMessage }
+func (RequestServerInfo) MessageType() MessageType       { return RequestServerInfoMessage }
+func (ServerInfo) MessageType() MessageType              { return ServerInfoMessage }
+func (FleshlightLaunchFW12Cmd) MessageType() MessageType { return FleshlightLaunchFW12CmdMessage }
+func (LovenseCmd) MessageType() MessageType              { return LovenseCmdMessage }
+func (SingleMotorVibrateCmd) MessageType() MessageType   { return SingleMotorVibrateCmdMessage }
+func (KiirooCmd) MessageType() MessageType               { return KiirooCmdMessage }
+func (RawReadCmd) MessageType() MessageType              { return RawReadCmdMessage }
+func (RawWriteCmd) MessageType() MessageType             { return RawWriteCmdMessage }
+func (RawSubscribeCmd) MessageType() MessageType         { return RawSubscribeCmdMessage }
+func (RawUnsubscribeCmd) MessageType() MessageType       { return RawUnsubscribeCmdMessage }
+func (RawReading) MessageType() MessageType              { return RawReadingMessage }
+func (VorzeA10CycloneCmd) MessageType() MessageType      { return VorzeA10CycloneCmdMessage }
+func (VibrateCmd) MessageType() MessageType              { return VibrateCmdMessage }
+func (RotateCmd) MessageType() MessageType               { return RotateCmdMessage }
+func (LinearCmd) MessageType() MessageType               { return LinearCmdMessage }
+func (BatteryLevelCmd) MessageType() MessageType         { return BatteryLevelCmdMessage }
+func (BatteryLevelReading) MessageType() MessageType     { return BatteryLevelReadingMessage }
+func (RSSILevelCmd) MessageType() MessageType            { return RSSILevelCmdMessage }
+func (RSSILevelReading) MessageType() MessageType        { return RSSILevelReadingMessage }
 
 // CreateMessages creates a Messages object from the given messages.
 func CreateMessages(msgs ...Message) Messages {

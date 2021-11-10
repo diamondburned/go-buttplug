@@ -21,7 +21,7 @@ type MessageType string
 
 const (
 	{{ range .Fields -}}
-	{{ .GoName }}Type MessageType = "{{ .SchemaName }}"
+	{{ .GoName }}Message MessageType = "{{ .SchemaName }}"
 	{{ end -}}
 )
 
@@ -41,7 +41,7 @@ type Message interface {
 type Messages map[MessageType]Message
 
 {{ range .Fields -}}
-func ({{ .GoName }}) MessageType() MessageType { return {{ .GoName }}Type }
+func ({{ .GoName }}) MessageType() MessageType { return {{ .GoName }}Message }
 {{ end -}}
 
 // CreateMessages creates a Messages object from the given messages.
