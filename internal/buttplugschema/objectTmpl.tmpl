@@ -1,0 +1,10 @@
+struct {
+	{{ range .Fields -}}
+	{{ if .Description -}}
+	{{ Comment .Description 1 }}
+	{{ .GoName }} {{ .GoType }} `json:"{{.JSONName}}{{if not .Required}},omitempty{{end}}"`
+	{{ else -}}
+	{{ .GoName }} {{ .GoType }} `json:"{{.JSONName}}{{if not .Required}},omitempty{{end}}"`
+	{{ end -}}
+	{{ end -}}
+}
