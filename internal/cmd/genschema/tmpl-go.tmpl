@@ -9,7 +9,7 @@ type MessageType string
 
 const (
 	{{ range .Fields -}}
-	{{ .GoName }}Type = "{{ .SchemaName }}"
+	{{ .GoName }}Type MessageType = "{{ .SchemaName }}"
 	{{ end -}}
 )
 
