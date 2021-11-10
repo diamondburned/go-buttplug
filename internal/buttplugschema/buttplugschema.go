@@ -31,8 +31,9 @@ func SchemaURL(ref string) string {
 
 // Schema provides methods to work with the buttplug.io JSON schema.
 type Schema struct {
-	Messages Messages
-	Types    []Type
+	Messages  Messages
+	Types     []Type
+	GoImports []string
 }
 
 // Messages is the top-level message type.
@@ -127,18 +128,34 @@ func (n namePiece) String() string {
 	return fmt.Sprintf("%s (%s)", n.name, n.goName)
 }
 
+func (r *resolver) goImport(imp string) {
+	for _, goImport := range r.GoImports {
+		if goImport == imp {
+			return
+		}
+	}
+	r.GoImports = append(r.GoImports, imp)
+}
+
 func (r *resolver) add(name namePiece, typ *jsonschema.Schema) Type {
 	if oneOf, ok := typ.JSONProp("oneOf").(*jsonschema.OneOf); ok {
 		union := OneOfType{
 			BaseType: newBaseType(name, "interface{}", typ),
 		}
+		types := make([]string, 0, len(*oneOf))
 		for _, typ := range *oneOf {
 			t := r.add(namePiece{}, typ)
 			if t != nil {
 				union.Types = append(union.Types, t)
+				types = append(types, t.GoName())
 			}
 		}
 		if len(union.Types) > 0 {
+			r.goImport("encoding/json")
+			union.BaseType.goType = fmt.Sprintf(
+				"json.RawMessage /* %s */",
+				strings.Join(types, ", "),
+			)
 			return union
 		}
 		log.Println("no types resolved for union", name)

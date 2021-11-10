@@ -2,6 +2,18 @@
 
 package buttplug
 
+{{ define "imports" }}
+{{ if eq (len .) 1 }}
+import "{{ index . 0 }}"
+{{ else }}
+import (
+	{{ range . }}
+	"{{ . }}"
+	{{ end }}
+)
+{{ end }}
+{{ end }}
+
 {{ define "messages" }}
 // MessageType identifies a message type in a Messages object. It is also the
 // object key in the Messages object.

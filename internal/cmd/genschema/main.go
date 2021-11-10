@@ -47,6 +47,7 @@ func main() {
 	render("", nil)
 
 	p := buttplugschema.Parse(s)
+	render("imports", p.GoImports)
 	render("messages", p.Messages)
 
 	for _, typ := range p.Types {

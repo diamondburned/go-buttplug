@@ -2,6 +2,8 @@
 
 package buttplug
 
+import "encoding/json"
+
 // MessageType identifies a message type in a Messages object. It is also the
 // object key in the Messages object.
 type MessageType string
@@ -250,7 +252,7 @@ type DeviceList struct {
 		DeviceName DeviceName `json:"DeviceName"`
 		// Index used for referencing the device in device messages.
 		DeviceIndex    DeviceIndex `json:"DeviceIndex"`
-		DeviceMessages interface{} `json:"DeviceMessages"`
+		DeviceMessages json.RawMessage/* DeviceMessages, DeviceMessagesEx */ `json:"DeviceMessages"`
 	} `json:"Devices"`
 }
 
@@ -267,7 +269,7 @@ type DeviceAdded struct {
 	DeviceName DeviceName `json:"DeviceName"`
 	// Index used for referencing the device in device messages.
 	DeviceIndex    DeviceIndex `json:"DeviceIndex"`
-	DeviceMessages interface{} `json:"DeviceMessages"`
+	DeviceMessages json.RawMessage/* DeviceMessages, DeviceMessagesEx */ `json:"DeviceMessages"`
 }
 
 type DeviceIndexMessage struct {
