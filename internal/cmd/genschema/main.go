@@ -11,8 +11,8 @@ import (
 
 	_ "embed"
 
-	"github.com/diamondburned/go-buttplugio/internal/buttplugschema"
-	"github.com/diamondburned/go-buttplugio/internal/buttplugschema/tmplutil"
+	"github.com/diamondburned/go-buttplug/internal/buttplugschema"
+	"github.com/diamondburned/go-buttplug/internal/buttplugschema/tmplutil"
 )
 
 var (

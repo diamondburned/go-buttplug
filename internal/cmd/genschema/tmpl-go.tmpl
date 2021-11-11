@@ -37,6 +37,8 @@ type Message interface {
 	// MessageID returns the message's ID, or 0 if the message is a system
 	// message.
 	MessageID() ID
+	// SetMessageID sets the message ID field. This is used for sending.
+	SetMessageID(ID)
 	// MessageType returns the message's type (object key).
 	MessageType() MessageType
 }
@@ -49,6 +51,11 @@ type Messages map[MessageType]Message
 
 // MessageID implements Message.
 func ({{ $recv }} *{{ .GoName }}) MessageID() ID { return ID({{ $recv }}.ID) }
+
+// SetMessageID implements Message.
+func ({{ $recv }} *{{ .GoName }}) SetMessageID(id ID) {
+	{{ $recv }}.ID = {{ (index .ObjectType.Fields 0).GoType }}(id)
+}
 
 // MessageType implements Message.
 func ({{ $recv }} *{{ .GoName }}) MessageType() MessageType { return {{ .GoName }}Message }

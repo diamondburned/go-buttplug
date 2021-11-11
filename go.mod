@@ -1,4 +1,4 @@
-module github.com/diamondburned/go-buttplugio
+module github.com/diamondburned/go-buttplug
 
 go 1.17
 

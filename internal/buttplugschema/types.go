@@ -5,7 +5,7 @@ import (
 
 	_ "embed"
 
-	"github.com/diamondburned/go-buttplugio/internal/buttplugschema/tmplutil"
+	"github.com/diamondburned/go-buttplug/internal/buttplugschema/tmplutil"
 )
 
 // Type describes any type.
@@ -76,6 +76,11 @@ type Field struct {
 // GoName returns the field name.
 func (f Field) GoName() string {
 	return f.FieldName
+}
+
+// ObjectType asserts Field's Type as an ObjectType.
+func (f Field) ObjectType() ObjectType {
+	return f.Type.(ObjectType)
 }
 
 // ArrayType describes a slice of type.

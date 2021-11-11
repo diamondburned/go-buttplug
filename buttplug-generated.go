@@ -88,6 +88,8 @@ type Message interface {
 	// MessageID returns the message's ID, or 0 if the message is a system
 	// message.
 	MessageID() ID
+	// SetMessageID sets the message ID field. This is used for sending.
+	SetMessageID(ID)
 	// MessageType returns the message's type (object key).
 	MessageType() MessageType
 }
@@ -98,11 +100,21 @@ type Messages map[MessageType]Message
 // MessageID implements Message.
 func (o *OK) MessageID() ID { return ID(o.ID) }
 
+// SetMessageID implements Message.
+func (o *OK) SetMessageID(id ID) {
+	o.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (o *OK) MessageType() MessageType { return OKMessage }
 
 // MessageID implements Message.
 func (e *Error) MessageID() ID { return ID(e.ID) }
+
+// SetMessageID implements Message.
+func (e *Error) SetMessageID(id ID) {
+	e.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (e *Error) MessageType() MessageType { return ErrorMessage }
@@ -110,11 +122,21 @@ func (e *Error) MessageType() MessageType { return ErrorMessage }
 // MessageID implements Message.
 func (p *Ping) MessageID() ID { return ID(p.ID) }
 
+// SetMessageID implements Message.
+func (p *Ping) SetMessageID(id ID) {
+	p.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (p *Ping) MessageType() MessageType { return PingMessage }
 
 // MessageID implements Message.
 func (t *Test) MessageID() ID { return ID(t.ID) }
+
+// SetMessageID implements Message.
+func (t *Test) SetMessageID(id ID) {
+	t.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (t *Test) MessageType() MessageType { return TestMessage }
@@ -122,11 +144,21 @@ func (t *Test) MessageType() MessageType { return TestMessage }
 // MessageID implements Message.
 func (d *DeviceList) MessageID() ID { return ID(d.ID) }
 
+// SetMessageID implements Message.
+func (d *DeviceList) SetMessageID(id ID) {
+	d.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (d *DeviceList) MessageType() MessageType { return DeviceListMessage }
 
 // MessageID implements Message.
 func (d *DeviceAdded) MessageID() ID { return ID(d.ID) }
+
+// SetMessageID implements Message.
+func (d *DeviceAdded) SetMessageID(id ID) {
+	d.ID = SystemID(id)
+}
 
 // MessageType implements Message.
 func (d *DeviceAdded) MessageType() MessageType { return DeviceAddedMessage }
@@ -134,11 +166,21 @@ func (d *DeviceAdded) MessageType() MessageType { return DeviceAddedMessage }
 // MessageID implements Message.
 func (d *DeviceRemoved) MessageID() ID { return ID(d.ID) }
 
+// SetMessageID implements Message.
+func (d *DeviceRemoved) SetMessageID(id ID) {
+	d.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (d *DeviceRemoved) MessageType() MessageType { return DeviceRemovedMessage }
 
 // MessageID implements Message.
 func (r *RequestDeviceList) MessageID() ID { return ID(r.ID) }
+
+// SetMessageID implements Message.
+func (r *RequestDeviceList) SetMessageID(id ID) {
+	r.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (r *RequestDeviceList) MessageType() MessageType { return RequestDeviceListMessage }
@@ -146,11 +188,21 @@ func (r *RequestDeviceList) MessageType() MessageType { return RequestDeviceList
 // MessageID implements Message.
 func (s *StopDeviceCmd) MessageID() ID { return ID(s.ID) }
 
+// SetMessageID implements Message.
+func (s *StopDeviceCmd) SetMessageID(id ID) {
+	s.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (s *StopDeviceCmd) MessageType() MessageType { return StopDeviceCmdMessage }
 
 // MessageID implements Message.
 func (s *StopAllDevices) MessageID() ID { return ID(s.ID) }
+
+// SetMessageID implements Message.
+func (s *StopAllDevices) SetMessageID(id ID) {
+	s.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (s *StopAllDevices) MessageType() MessageType { return StopAllDevicesMessage }
@@ -158,11 +210,21 @@ func (s *StopAllDevices) MessageType() MessageType { return StopAllDevicesMessag
 // MessageID implements Message.
 func (s *StartScanning) MessageID() ID { return ID(s.ID) }
 
+// SetMessageID implements Message.
+func (s *StartScanning) SetMessageID(id ID) {
+	s.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (s *StartScanning) MessageType() MessageType { return StartScanningMessage }
 
 // MessageID implements Message.
 func (s *StopScanning) MessageID() ID { return ID(s.ID) }
+
+// SetMessageID implements Message.
+func (s *StopScanning) SetMessageID(id ID) {
+	s.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (s *StopScanning) MessageType() MessageType { return StopScanningMessage }
@@ -170,11 +232,21 @@ func (s *StopScanning) MessageType() MessageType { return StopScanningMessage }
 // MessageID implements Message.
 func (s *ScanningFinished) MessageID() ID { return ID(s.ID) }
 
+// SetMessageID implements Message.
+func (s *ScanningFinished) SetMessageID(id ID) {
+	s.ID = SystemID(id)
+}
+
 // MessageType implements Message.
 func (s *ScanningFinished) MessageType() MessageType { return ScanningFinishedMessage }
 
 // MessageID implements Message.
 func (r *RequestLog) MessageID() ID { return ID(r.ID) }
+
+// SetMessageID implements Message.
+func (r *RequestLog) SetMessageID(id ID) {
+	r.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (r *RequestLog) MessageType() MessageType { return RequestLogMessage }
@@ -182,11 +254,21 @@ func (r *RequestLog) MessageType() MessageType { return RequestLogMessage }
 // MessageID implements Message.
 func (l *Log) MessageID() ID { return ID(l.ID) }
 
+// SetMessageID implements Message.
+func (l *Log) SetMessageID(id ID) {
+	l.ID = SystemID(id)
+}
+
 // MessageType implements Message.
 func (l *Log) MessageType() MessageType { return LogMessage }
 
 // MessageID implements Message.
 func (r *RequestServerInfo) MessageID() ID { return ID(r.ID) }
+
+// SetMessageID implements Message.
+func (r *RequestServerInfo) SetMessageID(id ID) {
+	r.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (r *RequestServerInfo) MessageType() MessageType { return RequestServerInfoMessage }
@@ -194,11 +276,21 @@ func (r *RequestServerInfo) MessageType() MessageType { return RequestServerInfo
 // MessageID implements Message.
 func (s *ServerInfo) MessageID() ID { return ID(s.ID) }
 
+// SetMessageID implements Message.
+func (s *ServerInfo) SetMessageID(id ID) {
+	s.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (s *ServerInfo) MessageType() MessageType { return ServerInfoMessage }
 
 // MessageID implements Message.
 func (f *FleshlightLaunchFW12Cmd) MessageID() ID { return ID(f.ID) }
+
+// SetMessageID implements Message.
+func (f *FleshlightLaunchFW12Cmd) SetMessageID(id ID) {
+	f.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (f *FleshlightLaunchFW12Cmd) MessageType() MessageType { return FleshlightLaunchFW12CmdMessage }
@@ -206,11 +298,21 @@ func (f *FleshlightLaunchFW12Cmd) MessageType() MessageType { return FleshlightL
 // MessageID implements Message.
 func (l *LovenseCmd) MessageID() ID { return ID(l.ID) }
 
+// SetMessageID implements Message.
+func (l *LovenseCmd) SetMessageID(id ID) {
+	l.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (l *LovenseCmd) MessageType() MessageType { return LovenseCmdMessage }
 
 // MessageID implements Message.
 func (s *SingleMotorVibrateCmd) MessageID() ID { return ID(s.ID) }
+
+// SetMessageID implements Message.
+func (s *SingleMotorVibrateCmd) SetMessageID(id ID) {
+	s.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (s *SingleMotorVibrateCmd) MessageType() MessageType { return SingleMotorVibrateCmdMessage }
@@ -218,11 +320,21 @@ func (s *SingleMotorVibrateCmd) MessageType() MessageType { return SingleMotorVi
 // MessageID implements Message.
 func (k *KiirooCmd) MessageID() ID { return ID(k.ID) }
 
+// SetMessageID implements Message.
+func (k *KiirooCmd) SetMessageID(id ID) {
+	k.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (k *KiirooCmd) MessageType() MessageType { return KiirooCmdMessage }
 
 // MessageID implements Message.
 func (r *RawReadCmd) MessageID() ID { return ID(r.ID) }
+
+// SetMessageID implements Message.
+func (r *RawReadCmd) SetMessageID(id ID) {
+	r.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (r *RawReadCmd) MessageType() MessageType { return RawReadCmdMessage }
@@ -230,11 +342,21 @@ func (r *RawReadCmd) MessageType() MessageType { return RawReadCmdMessage }
 // MessageID implements Message.
 func (r *RawWriteCmd) MessageID() ID { return ID(r.ID) }
 
+// SetMessageID implements Message.
+func (r *RawWriteCmd) SetMessageID(id ID) {
+	r.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (r *RawWriteCmd) MessageType() MessageType { return RawWriteCmdMessage }
 
 // MessageID implements Message.
 func (r *RawSubscribeCmd) MessageID() ID { return ID(r.ID) }
+
+// SetMessageID implements Message.
+func (r *RawSubscribeCmd) SetMessageID(id ID) {
+	r.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (r *RawSubscribeCmd) MessageType() MessageType { return RawSubscribeCmdMessage }
@@ -242,11 +364,21 @@ func (r *RawSubscribeCmd) MessageType() MessageType { return RawSubscribeCmdMess
 // MessageID implements Message.
 func (r *RawUnsubscribeCmd) MessageID() ID { return ID(r.ID) }
 
+// SetMessageID implements Message.
+func (r *RawUnsubscribeCmd) SetMessageID(id ID) {
+	r.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (r *RawUnsubscribeCmd) MessageType() MessageType { return RawUnsubscribeCmdMessage }
 
 // MessageID implements Message.
 func (r *RawReading) MessageID() ID { return ID(r.ID) }
+
+// SetMessageID implements Message.
+func (r *RawReading) SetMessageID(id ID) {
+	r.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (r *RawReading) MessageType() MessageType { return RawReadingMessage }
@@ -254,11 +386,21 @@ func (r *RawReading) MessageType() MessageType { return RawReadingMessage }
 // MessageID implements Message.
 func (v *VorzeA10CycloneCmd) MessageID() ID { return ID(v.ID) }
 
+// SetMessageID implements Message.
+func (v *VorzeA10CycloneCmd) SetMessageID(id ID) {
+	v.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (v *VorzeA10CycloneCmd) MessageType() MessageType { return VorzeA10CycloneCmdMessage }
 
 // MessageID implements Message.
 func (v *VibrateCmd) MessageID() ID { return ID(v.ID) }
+
+// SetMessageID implements Message.
+func (v *VibrateCmd) SetMessageID(id ID) {
+	v.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (v *VibrateCmd) MessageType() MessageType { return VibrateCmdMessage }
@@ -266,11 +408,21 @@ func (v *VibrateCmd) MessageType() MessageType { return VibrateCmdMessage }
 // MessageID implements Message.
 func (r *RotateCmd) MessageID() ID { return ID(r.ID) }
 
+// SetMessageID implements Message.
+func (r *RotateCmd) SetMessageID(id ID) {
+	r.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (r *RotateCmd) MessageType() MessageType { return RotateCmdMessage }
 
 // MessageID implements Message.
 func (l *LinearCmd) MessageID() ID { return ID(l.ID) }
+
+// SetMessageID implements Message.
+func (l *LinearCmd) SetMessageID(id ID) {
+	l.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (l *LinearCmd) MessageType() MessageType { return LinearCmdMessage }
@@ -278,11 +430,21 @@ func (l *LinearCmd) MessageType() MessageType { return LinearCmdMessage }
 // MessageID implements Message.
 func (b *BatteryLevelCmd) MessageID() ID { return ID(b.ID) }
 
+// SetMessageID implements Message.
+func (b *BatteryLevelCmd) SetMessageID(id ID) {
+	b.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (b *BatteryLevelCmd) MessageType() MessageType { return BatteryLevelCmdMessage }
 
 // MessageID implements Message.
 func (b *BatteryLevelReading) MessageID() ID { return ID(b.ID) }
+
+// SetMessageID implements Message.
+func (b *BatteryLevelReading) SetMessageID(id ID) {
+	b.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (b *BatteryLevelReading) MessageType() MessageType { return BatteryLevelReadingMessage }
@@ -290,11 +452,21 @@ func (b *BatteryLevelReading) MessageType() MessageType { return BatteryLevelRea
 // MessageID implements Message.
 func (r *RSSILevelCmd) MessageID() ID { return ID(r.ID) }
 
+// SetMessageID implements Message.
+func (r *RSSILevelCmd) SetMessageID(id ID) {
+	r.ID = ID(id)
+}
+
 // MessageType implements Message.
 func (r *RSSILevelCmd) MessageType() MessageType { return RSSILevelCmdMessage }
 
 // MessageID implements Message.
 func (r *RSSILevelReading) MessageID() ID { return ID(r.ID) }
+
+// SetMessageID implements Message.
+func (r *RSSILevelReading) SetMessageID(id ID) {
+	r.ID = ID(id)
+}
 
 // MessageType implements Message.
 func (r *RSSILevelReading) MessageType() MessageType { return RSSILevelReadingMessage }
