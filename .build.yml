@@ -1,0 +1,7 @@
+image: "nixos/latest"
+packages:
+    - nixos.git
+sources:
+    - https://github.com/diamondburned/go-buttplug
+tasks:
+    - test: nix-shell --run 'go test ./...'

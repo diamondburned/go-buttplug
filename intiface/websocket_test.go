@@ -49,7 +49,7 @@ func TestWebsocket(t *testing.T) {
 			if err != nil {
 				t.Error("cannot ping:", err)
 			}
-			if list, ok := v.(*buttplug.DeviceList); !ok {
+			if _, ok := v.(*buttplug.DeviceList); !ok {
 				t.Errorf("reply is not of type *DeviceList, but %#v", v)
 			}
 
