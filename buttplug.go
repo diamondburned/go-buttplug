@@ -1,5 +1,9 @@
 // Package buttplug provides Go wrappers around the Intiface API, which is a
 // wrapper around the buttplug.io specifications.
+//
+// Most people should use package intiface instead. This package only supplies
+// the messages and the Websocket implementation, but intiface allows those to
+// automatically interact with the Intiface server.
 package buttplug
 
 import (

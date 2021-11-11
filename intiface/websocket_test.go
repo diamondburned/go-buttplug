@@ -2,8 +2,10 @@ package intiface
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 	"testing"
 	"time"
@@ -25,6 +27,39 @@ func requireCLI(t *testing.T) {
 	_, err := exec.LookPath(intifaceCLI)
 	if err != nil {
 		t.Skip("skipping test since no intiface", intifaceCLI, "found")
+	}
+}
+
+func Example() {
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	ws := NewWebsocket(0, intifaceCLI)
+	ch := ws.Open(ctx)
+
+	for ev := range ch {
+		switch ev := ev.(type) {
+		case *buttplug.InternalError:
+			log.Println("error:", ev.Err)
+		case *buttplug.ServerInfo:
+			log.Printf("server %q, version %d.%d", ev.ServerName, ev.MajorVersion, ev.MinorVersion)
+
+			// Try pinging synchronously.
+			v, err := ws.Command(ctx, &buttplug.RequestDeviceList{})
+			if err != nil {
+				log.Fatalln("cannot request device list:", err)
+			}
+
+			devices := v.(*buttplug.DeviceList)
+			log.Println("devices:", devices)
+
+			// Exit.
+			cancel()
+		}
+	}
+
+	if err := ws.LastError(); err != nil {
+		log.Fatalln("error:", err)
 	}
 }
 

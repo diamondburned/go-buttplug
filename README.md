@@ -8,3 +8,9 @@ A Go library for the [Intiface][intiface] Websocket API, which wraps the
 
 [intiface]: https://github.com/intiface/intiface-cli-rs
 [buttplug]: https://buttplug-spec.docs.buttplug.io
+
+## Example
+
+See [package intiface][intiface-doc]'s documentation, under section Examples.
+
+[intiface-doc]: https://pkg.go.dev/github.com/diamondburned/go-buttplug/intiface
