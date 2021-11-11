@@ -4,4 +4,4 @@ packages:
 sources:
     - https://github.com/diamondburned/go-buttplug
 tasks:
-    - test: nix-shell --run 'go test ./...'
+    - test: cd go-buttplug && nix-shell --run 'go test ./...'
