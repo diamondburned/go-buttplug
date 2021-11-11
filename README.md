@@ -11,6 +11,6 @@ A Go library for the [Intiface][intiface] Websocket API, which wraps the
 
 ## Example
 
-See [package intiface][intiface-doc]'s documentation, under section Examples.
+See [package intiface's example][intiface-doc].
 
-[intiface-doc]: https://pkg.go.dev/github.com/diamondburned/go-buttplug/intiface
+[intiface-doc]: https://pkg.go.dev/github.com/diamondburned/go-buttplug/intiface#example-package
