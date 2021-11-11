@@ -48,43 +48,45 @@ const (
 // Message is an interface ethat all messages will satisfy. All types that are
 // inside MessageType will implement the interface. Inside this type declaration
 // lists all types that will satisfy the interface.
+//
+// These types satisfy this interface:
+//
+//    - OK
+//    - Error
+//    - Ping
+//    - Test
+//    - DeviceList
+//    - DeviceAdded
+//    - DeviceRemoved
+//    - RequestDeviceList
+//    - StopDeviceCmd
+//    - StopAllDevices
+//    - StartScanning
+//    - StopScanning
+//    - ScanningFinished
+//    - RequestLog
+//    - Log
+//    - RequestServerInfo
+//    - ServerInfo
+//    - FleshlightLaunchFW12Cmd
+//    - LovenseCmd
+//    - SingleMotorVibrateCmd
+//    - KiirooCmd
+//    - RawReadCmd
+//    - RawWriteCmd
+//    - RawSubscribeCmd
+//    - RawUnsubscribeCmd
+//    - RawReading
+//    - VorzeA10CycloneCmd
+//    - VibrateCmd
+//    - RotateCmd
+//    - LinearCmd
+//    - BatteryLevelCmd
+//    - BatteryLevelReading
+//    - RSSILevelCmd
+//    - RSSILevelReading
+//
 type Message interface {
-	// These types satisfy this interface:
-	//    - OK
-	//    - Error
-	//    - Ping
-	//    - Test
-	//    - DeviceList
-	//    - DeviceAdded
-	//    - DeviceRemoved
-	//    - RequestDeviceList
-	//    - StopDeviceCmd
-	//    - StopAllDevices
-	//    - StartScanning
-	//    - StopScanning
-	//    - ScanningFinished
-	//    - RequestLog
-	//    - Log
-	//    - RequestServerInfo
-	//    - ServerInfo
-	//    - FleshlightLaunchFW12Cmd
-	//    - LovenseCmd
-	//    - SingleMotorVibrateCmd
-	//    - KiirooCmd
-	//    - RawReadCmd
-	//    - RawWriteCmd
-	//    - RawSubscribeCmd
-	//    - RawUnsubscribeCmd
-	//    - RawReading
-	//    - VorzeA10CycloneCmd
-	//    - VibrateCmd
-	//    - RotateCmd
-	//    - LinearCmd
-	//    - BatteryLevelCmd
-	//    - BatteryLevelReading
-	//    - RSSILevelCmd
-	//    - RSSILevelReading
-
 	// MessageID returns the message's ID, or 0 if the message is a system
 	// message.
 	MessageID() ID

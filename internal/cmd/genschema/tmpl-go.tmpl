@@ -28,12 +28,14 @@ const (
 // Message is an interface ethat all messages will satisfy. All types that are
 // inside MessageType will implement the interface. Inside this type declaration
 // lists all types that will satisfy the interface.
+//
+// These types satisfy this interface:
+//
+{{ range .Fields -}}
+//    - {{ .GoName }}
+{{ end -}}
+//
 type Message interface {
-	// These types satisfy this interface:
-	{{ range .Fields -}}
-	//    - {{ .GoName }}
-	{{ end }}
-
 	// MessageID returns the message's ID, or 0 if the message is a system
 	// message.
 	MessageID() ID
