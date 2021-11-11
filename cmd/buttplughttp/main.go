@@ -11,6 +11,7 @@ import (
 	"github.com/diamondburned/go-buttplug"
 	"github.com/diamondburned/go-buttplug/device"
 	"github.com/diamondburned/go-buttplug/intiface"
+	"github.com/go-chi/chi"
 	"github.com/pkg/errors"
 )
 
@@ -49,13 +50,24 @@ func run() error {
 	httpErr := make(chan error)
 	go func() {
 		server := newServer(ws.Websocket, manager)
-		httpErr <- serveHTTP(ctx, httpAddr, server)
+
+		mux := chi.NewMux()
+		mux.Mount("/api", server)
+
+		err := serveHTTP(ctx, httpAddr, mux)
+
+		select {
+		case httpErr <- err:
+		case <-ctx.Done():
+		}
 	}()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+		case err := <-httpErr:
+			return errors.Wrap(err, "HTTP error")
 		case msg := <-msgCh:
 			switch msg := msg.(type) {
 			case *buttplug.ServerInfo:
@@ -77,8 +89,6 @@ func run() error {
 			case error:
 				log.Println("buttplug error:", msg)
 			}
-		case err := <-httpErr:
-			return errors.Wrap(err, "HTTP error")
 		}
 	}
 }

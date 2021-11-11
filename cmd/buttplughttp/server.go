@@ -141,6 +141,8 @@ func (s *server) deviceVibrate(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func parseDeviceID(r *http.Request) (buttplug.DeviceIndex, error) {
