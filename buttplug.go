@@ -39,10 +39,74 @@ const Version = 2
 // NewRequestServerInfo creates a new RequestServerInfo with the current client
 // information.
 func NewRequestServerInfo() *RequestServerInfo {
+	v := new(int)
+	*v = Version
 	return &RequestServerInfo{
 		ClientName:     "go-buttplug",
-		MessageVersion: Version,
+		MessageVersion: v,
 	}
+}
+
+// Broadcaster is used for creating multiple event loops on the same Buttplug
+// server.
+type Broadcaster struct {
+	dst  map[chan<- Message]struct{}
+	mut  sync.Mutex
+	void bool
+}
+
+// NewBroadcaster creates a new broadcaster.
+func NewBroadcaster() *Broadcaster {
+	return &Broadcaster{
+		dst: make(map[chan<- Message]struct{}),
+	}
+}
+
+// Start starts the broadcaster.
+func (b *Broadcaster) Start(src <-chan Message) {
+	b.mut.Lock()
+	if b.void {
+		panic("Start called on voided Broadcaster")
+	}
+	b.mut.Unlock()
+
+	go func() {
+		for op := range src {
+			b.mut.Lock()
+
+			for ch := range b.dst {
+				ch <- op
+			}
+
+			b.mut.Unlock()
+		}
+
+		b.mut.Lock()
+		b.void = true
+
+		for ch := range b.dst {
+			close(ch)
+		}
+
+		b.mut.Unlock()
+	}()
+}
+
+// Subscribe subscribes the given channel
+func (b *Broadcaster) Subscribe(ch chan<- Message) {
+	b.mut.Lock()
+	if b.void {
+		panic("Subscribe called on voided Broadcaster")
+	}
+	b.dst[ch] = struct{}{}
+	b.mut.Unlock()
+}
+
+// Listen returns a newly subscribed Op channel.
+func (b *Broadcaster) Listen() <-chan Message {
+	ch := make(chan Message, 1)
+	b.Subscribe(ch)
+	return ch
 }
 
 type command struct {
@@ -422,8 +486,8 @@ func (w *Websocket) Send(ctx context.Context, msgs ...Message) {
 // Command sends a message over the websocket and waits for a reply. If the
 // caller calls this method after the websocket is closed, the function will
 // block forever, since a websocket cannot be started back up. The returned
-// message is never nil, but it may be of type InternalError, which the function
-// will unbox into the return type.
+// message is never nil, but it may be of type InternalError or Error, which the
+// function will unbox into the return error type.
 func (w *Websocket) Command(ctx context.Context, msg Message) (Message, error) {
 	msg.SetMessageID(w.id.Next())
 	cmd := command{
@@ -444,10 +508,14 @@ func (w *Websocket) Command(ctx context.Context, msg Message) (Message, error) {
 		err := errors.Wrap(ctx.Err(), "timed out waiting")
 		return &InternalError{Err: err}, err
 	case reply := <-cmd.reply:
-		if err, ok := reply.(*InternalError); ok {
-			return reply, err.Err
+		switch reply := reply.(type) {
+		case *InternalError:
+			return reply, reply.Err
+		case *Error:
+			return reply, reply
+		default:
+			return reply, nil
 		}
-		return reply, nil
 	}
 }
 

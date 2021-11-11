@@ -586,48 +586,48 @@ type StepCount []int
 // Attributes for device messages.
 type GenericMessageAttributes struct {
 	// Number of features on device.
-	FeatureCount FeatureCount `json:"FeatureCount,omitempty"`
+	FeatureCount *FeatureCount `json:"FeatureCount,omitempty"`
 	// Specifies granularity of each feature on the device.
-	StepCount []int `json:"StepCount,omitempty"`
+	StepCount *[]int `json:"StepCount,omitempty"`
 }
 
 // Attributes for raw device messages.
 type RawMessageAttributes struct {
-	Endpoints []string `json:"Endpoints,omitempty"`
+	Endpoints *[]string `json:"Endpoints,omitempty"`
 }
 
 // A list of the messages a device will accept on this server implementation.
 type DeviceMessagesEx struct {
 	// Attributes for device message that have no attributes.
-	StopDeviceCmd NullMessageAttributes `json:"StopDeviceCmd,omitempty"`
+	StopDeviceCmd *NullMessageAttributes `json:"StopDeviceCmd,omitempty"`
 	// Attributes for device messages.
-	VibrateCmd GenericMessageAttributes `json:"VibrateCmd,omitempty"`
+	VibrateCmd *GenericMessageAttributes `json:"VibrateCmd,omitempty"`
 	// Attributes for device messages.
-	LinearCmd GenericMessageAttributes `json:"LinearCmd,omitempty"`
+	LinearCmd *GenericMessageAttributes `json:"LinearCmd,omitempty"`
 	// Attributes for device messages.
-	RotateCmd GenericMessageAttributes `json:"RotateCmd,omitempty"`
+	RotateCmd *GenericMessageAttributes `json:"RotateCmd,omitempty"`
 	// Attributes for device message that have no attributes.
-	LovenseCmd NullMessageAttributes `json:"LovenseCmd,omitempty"`
+	LovenseCmd *NullMessageAttributes `json:"LovenseCmd,omitempty"`
 	// Attributes for device message that have no attributes.
-	VorzeA10CycloneCmd NullMessageAttributes `json:"VorzeA10CycloneCmd,omitempty"`
+	VorzeA10CycloneCmd *NullMessageAttributes `json:"VorzeA10CycloneCmd,omitempty"`
 	// Attributes for device message that have no attributes.
-	KiirooCmd NullMessageAttributes `json:"KiirooCmd,omitempty"`
+	KiirooCmd *NullMessageAttributes `json:"KiirooCmd,omitempty"`
 	// Attributes for device message that have no attributes.
-	SingleMotorVibrateCmd NullMessageAttributes `json:"SingleMotorVibrateCmd,omitempty"`
+	SingleMotorVibrateCmd *NullMessageAttributes `json:"SingleMotorVibrateCmd,omitempty"`
 	// Attributes for device message that have no attributes.
-	FleshlightLaunchFW12Cmd NullMessageAttributes `json:"FleshlightLaunchFW12Cmd,omitempty"`
+	FleshlightLaunchFW12Cmd *NullMessageAttributes `json:"FleshlightLaunchFW12Cmd,omitempty"`
 	// Attributes for device message that have no attributes.
-	BatteryLevelCmd NullMessageAttributes `json:"BatteryLevelCmd,omitempty"`
+	BatteryLevelCmd *NullMessageAttributes `json:"BatteryLevelCmd,omitempty"`
 	// Attributes for device message that have no attributes.
-	RSSILevelCmd NullMessageAttributes `json:"RSSILevelCmd,omitempty"`
+	RSSILevelCmd *NullMessageAttributes `json:"RSSILevelCmd,omitempty"`
 	// Attributes for raw device messages.
-	RawReadCmd RawMessageAttributes `json:"RawReadCmd,omitempty"`
+	RawReadCmd *RawMessageAttributes `json:"RawReadCmd,omitempty"`
 	// Attributes for raw device messages.
-	RawWriteCmd RawMessageAttributes `json:"RawWriteCmd,omitempty"`
+	RawWriteCmd *RawMessageAttributes `json:"RawWriteCmd,omitempty"`
 	// Attributes for raw device messages.
-	RawSubscribeCmd RawMessageAttributes `json:"RawSubscribeCmd,omitempty"`
+	RawSubscribeCmd *RawMessageAttributes `json:"RawSubscribeCmd,omitempty"`
 	// Attributes for raw device messages.
-	RawUnsubscribeCmd RawMessageAttributes `json:"RawUnsubscribeCmd,omitempty"`
+	RawUnsubscribeCmd *RawMessageAttributes `json:"RawUnsubscribeCmd,omitempty"`
 }
 
 // List of all available devices known to the system.
@@ -749,7 +749,7 @@ type RequestServerInfo struct {
 	// Name of the client software.
 	ClientName string `json:"ClientName"`
 	// Message template version of the client software.
-	MessageVersion int `json:"MessageVersion,omitempty"`
+	MessageVersion *int `json:"MessageVersion,omitempty"`
 }
 
 // Server version information, in Major.Minor.Build format.
@@ -761,11 +761,11 @@ type ServerInfo struct {
 	// Message template version of the server software.
 	MessageVersion int `json:"MessageVersion"`
 	// Major version of server.
-	MajorVersion int `json:"MajorVersion,omitempty"`
+	MajorVersion *int `json:"MajorVersion,omitempty"`
 	// Minor version of server.
-	MinorVersion int `json:"MinorVersion,omitempty"`
+	MinorVersion *int `json:"MinorVersion,omitempty"`
 	// Build version of server.
-	BuildVersion int `json:"BuildVersion,omitempty"`
+	BuildVersion *int `json:"BuildVersion,omitempty"`
 	// Maximum time (in milliseconds) the server will wait between ping messages
 	// from client before shutting down.
 	MaxPingTime int `json:"MaxPingTime"`
