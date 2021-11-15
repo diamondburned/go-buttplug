@@ -72,7 +72,7 @@ func (m *Manager) Controller(conn ButtplugConnection, ix buttplug.DeviceIndex) *
 		m.controllers[ix] = ctrl
 	}
 
-	return nil
+	return ctrl
 }
 
 // ListenPassthrough calls both Listen and the broadcaster's Subscribe to return
