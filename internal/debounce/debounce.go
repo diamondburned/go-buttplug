@@ -1,7 +1,6 @@
 package debounce
 
 import (
-	"log"
 	"sync"
 	"time"
 )
@@ -29,11 +28,8 @@ func (d *Debouncer) Run(f func()) {
 
 	if offset > d.Frequency {
 		go f()
-		log.Println("not debounced")
 		return
 	}
-
-	log.Println("debounced")
 
 	started := d.fun != nil
 	d.fun = f
