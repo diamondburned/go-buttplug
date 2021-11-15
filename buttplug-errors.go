@@ -76,8 +76,11 @@ func newInternalError(err error, wrap string, fatal bool) *InternalError {
 
 // Error implements error.
 func (e *InternalError) Error() string {
-	return "internal error:" + e.Err.Error()
+	return "internal error: " + e.Err.Error()
 }
+
+// Unwrap returns e.Err.
+func (e *InternalError) Unwrap() error { return e.Err }
 
 // MessageID returns 0.
 func (e *InternalError) MessageID() ID { return 0 }

@@ -72,7 +72,7 @@ type wsAdapter struct {
 }
 
 func (a wsAdapter) Log(err error) {
-	msg := &buttplug.InternalError{Err: errors.Wrap(err, "CLI error")}
+	msg := &buttplug.InternalError{Err: errors.Wrap(err, "intiface CLI error")}
 	a.ws.fatalErr.Set(msg.Err)
 	a.ws.ev <- msg
 }
