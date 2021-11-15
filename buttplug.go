@@ -203,6 +203,7 @@ func (w *Websocket) spin(ctx context.Context, ev chan<- Message, url string) {
 	s := loopState{
 		w:         w,
 		ctx:       ctx,
+		sends:     make(chan sendPacket),
 		events:    ev,
 		pending:   pending,
 		reconnect: queueReconnect,
@@ -230,6 +231,9 @@ func (w *Websocket) spin(ctx context.Context, ev chan<- Message, url string) {
 		}
 		return true
 	}
+
+	go func() {
+	}()
 
 	for {
 		select {
@@ -294,6 +298,7 @@ func (w *Websocket) spin(ctx context.Context, ev chan<- Message, url string) {
 			closeConn()
 			// Disable sending.
 			wsCmd = nil
+			close(s.sends)
 			heartbeat.Stop()
 
 			for {
@@ -326,10 +331,10 @@ func (w *Websocket) spin(ctx context.Context, ev chan<- Message, url string) {
 			}
 
 			// Start the read loop.
-			go func(conn *websocket.Conn) {
-				readWebsocket(ctx, conn, wsMsg)
-				queueReconnect()
-			}(s.conn)
+			go s.readLoop(s.conn, wsMsg)
+			// Start the send/write loop.
+			s.sends = make(chan sendPacket)
+			go s.sendLoop(s.conn, s.sends)
 
 			// Send the handshake asynchronously.
 			handshake := NewRequestServerInfo()
@@ -346,6 +351,7 @@ type loopState struct {
 	w         *Websocket
 	conn      *websocket.Conn
 	ctx       context.Context
+	sends     chan sendPacket
 	events    chan<- Message
 	pending   map[ID]command
 	reconnect func()
@@ -365,11 +371,24 @@ func (s *loopState) sendCommand(cmds ...command) {
 		}
 	}
 
-	// TODO: figure out something better.
-	go func(conn *websocket.Conn) {
-		err := conn.WriteJSON(msgs)
+	select {
+	case <-s.ctx.Done():
+	case s.sends <- sendPacket{cmds, msgs}:
+	}
+}
+
+type sendPacket struct {
+	cmds []command
+	msgs []Messages
+}
+
+func (s *loopState) sendLoop(conn *websocket.Conn, sends <-chan sendPacket) {
+	defer s.reconnect()
+
+	for v := range sends {
+		err := conn.WriteJSON(v.msgs)
 		if err == nil {
-			return
+			continue
 		}
 
 		// Log the error.
@@ -378,12 +397,9 @@ func (s *loopState) sendCommand(cmds ...command) {
 			Err: errors.Wrap(err, "failed to send to WS"),
 		}
 
-		// Queue a reconnect immediately.
-		s.reconnect()
-
 		// Fire the same error to all waiting commands.
-		for i, cmd := range cmds {
-			if cmds[i].reply == nil {
+		for i, cmd := range v.cmds {
+			if v.cmds[i].reply == nil {
 				// Ignore since asynchronous.
 				continue
 			}
@@ -397,22 +413,27 @@ func (s *loopState) sendCommand(cmds ...command) {
 			case <-s.ctx.Done():
 				return
 			case s.events <- errorEv:
+				continue
 			}
 		}
-	}(s.conn)
+
+		return
+	}
 }
 
-func readWebsocket(ctx context.Context, ws *websocket.Conn, ev chan<- Message) {
+func (s *loopState) readLoop(conn *websocket.Conn, dst chan<- Message) {
+	defer s.reconnect()
+
 	for {
 		// Do a context check so we can call continue and bail instead of doing
 		// if-checks on sendErr.
 		select {
-		case <-ctx.Done():
+		case <-s.ctx.Done():
 			return
 		default:
 		}
 
-		_, r, err := ws.NextReader()
+		_, r, err := conn.NextReader()
 		if err != nil {
 			return
 		}
@@ -420,7 +441,7 @@ func readWebsocket(ctx context.Context, ws *websocket.Conn, ev chan<- Message) {
 		var messages []map[MessageType]json.RawMessage
 
 		if err := json.NewDecoder(r).Decode(&messages); err != nil {
-			sendErr(ctx, ev, err, "cannot decode JSON packet", false)
+			sendErr(s.ctx, dst, err, "cannot decode JSON packet", false)
 			continue
 		}
 
@@ -429,21 +450,21 @@ func readWebsocket(ctx context.Context, ws *websocket.Conn, ev chan<- Message) {
 				fn, ok := knownMessages[t]
 				if !ok {
 					err := &UnknownEventError{t, raw}
-					sendErr(ctx, ev, err, "", false)
+					sendErr(s.ctx, dst, err, "", false)
 					continue
 				}
 
 				msg := fn()
 				if err := json.Unmarshal(raw, msg); err != nil {
 					err = fmt.Errorf("cannot unmarshal event %s: %w", t, err)
-					sendErr(ctx, ev, err, "", false)
+					sendErr(s.ctx, dst, err, "", false)
 					continue
 				}
 
 				select {
-				case ev <- msg:
+				case dst <- msg:
 					// ok
-				case <-ctx.Done():
+				case <-s.ctx.Done():
 					return
 				}
 			}
