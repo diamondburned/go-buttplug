@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/diamondburned/go-buttplug"
+	"github.com/diamondburned/go-buttplug/internal/debounce"
 )
 
 // DeviceMessages is a type that holds the supported message types for a device.
@@ -58,18 +59,28 @@ type Controller struct {
 	// Device is the device that this controller belongs to.
 	Device
 
-	conn ButtplugConnection
-	ctx  context.Context
+	state *controllerState
+	conn  ButtplugConnection
+	ctx   context.Context
 
 	async bool
 }
 
+type controllerState struct {
+	debounce debounce.Debouncer
+}
+
 // NewController creates a new device controller.
-func NewController(conn ButtplugConnection, device Device) *Controller {
+func NewController(conn ButtplugConnection, device Device, debounceFreq time.Duration) *Controller {
 	return &Controller{
 		Device: device,
 		conn:   conn,
 		ctx:    context.Background(),
+		state: &controllerState{
+			debounce: debounce.Debouncer{
+				Frequency: debounceFreq,
+			},
+		},
 	}
 }
 
@@ -125,7 +136,7 @@ func (c *Controller) RSSILevel() (float64, error) {
 
 // Stop asks the server to stop the device. Stop ca be asynchronous.
 func (c *Controller) Stop() error {
-	return c.sendAsyncable(&buttplug.StopDeviceCmd{DeviceIndex: c.Index})
+	return c.sendAsyncable(false, &buttplug.StopDeviceCmd{DeviceIndex: c.Index})
 }
 
 // deviceSpeed is kept equal to VibrateCmd's.
@@ -179,7 +190,7 @@ func (c *Controller) VibrationSteps() []int {
 
 // Vibrate asks the server to start vibrating. Vibrate can be asynchronous.
 func (c *Controller) Vibrate(motorSpeeds map[int]float64) error {
-	return c.sendAsyncable(&buttplug.VibrateCmd{
+	return c.sendAsyncable(true, &buttplug.VibrateCmd{
 		DeviceIndex: c.Index,
 		Speeds:      newDeviceSpeeds(motorSpeeds),
 	})
@@ -214,7 +225,7 @@ func newLinearVectors(vectors map[int]Vector) []linearVector {
 // Linear asks the server to linearly move the device over a certain amount of
 // time. Linear can be asynchronous.
 func (c *Controller) Linear(vectors map[int]Vector) error {
-	return c.sendAsyncable(&buttplug.LinearCmd{
+	return c.sendAsyncable(true, &buttplug.LinearCmd{
 		DeviceIndex: c.Index,
 		Vectors:     newLinearVectors(vectors),
 	})
@@ -249,18 +260,29 @@ func newRotations(rotations map[int]Rotation) []rotation {
 // Rotate asks the server to rotate some or all of the device's motors. Rotate
 // can be asynchronous.
 func (c *Controller) Rotate(rotations map[int]Rotation) error {
-	return c.sendAsyncable(&buttplug.RotateCmd{
+	return c.sendAsyncable(true, &buttplug.RotateCmd{
 		DeviceIndex: c.Index,
 		Rotations:   newRotations(rotations),
 	})
 }
 
-func (c *Controller) sendAsyncable(cmd buttplug.Message) error {
-	if c.async {
-		c.conn.Send(c.ctx, cmd)
-		return nil
-	} else {
-		_, err := c.conn.Command(c.ctx, cmd)
-		return err
+func (c *Controller) sendAsyncable(canDebounce bool, cmd buttplug.Message) error {
+	send := func() error {
+		if c.async {
+			c.conn.Send(c.ctx, cmd)
+			return nil
+		} else {
+			_, err := c.conn.Command(c.ctx, cmd)
+			return err
+		}
 	}
+
+	if canDebounce && c.state.debounce.Frequency > 0 {
+		// Errors are passed into the channel anyway, so we can just ignore it
+		// here.
+		c.state.debounce.Run(func() { send() })
+		return nil
+	}
+
+	return send()
 }

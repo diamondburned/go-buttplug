@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/diamondburned/go-buttplug"
 )
+
+const DebounceFrequency = time.Second / 20 // 20Hz
 
 // Manager holds an internal state of devices and does its best to keep it
 // updated. A zero-value Manager instance is a valid Manager instance.
@@ -15,6 +18,10 @@ type Manager struct {
 	// useful for guaranteeing that events are only handled after Manager itself
 	// is updated.
 	buttplug.Broadcaster
+	// DebounceFrequency determines the frequency to debounce certain commands
+	// when sending them to the websocket. It works around the internal event
+	// buffers for real-time control. Default is 20Hz. -1 to disable.
+	DebounceFrequency time.Duration
 
 	devices     map[buttplug.DeviceIndex]Device
 	controllers map[buttplug.DeviceIndex]*Controller
@@ -68,7 +75,12 @@ func (m *Manager) Controller(conn ButtplugConnection, ix buttplug.DeviceIndex) *
 			m.controllers = make(map[buttplug.DeviceIndex]*Controller, 1)
 		}
 
-		ctrl = NewController(conn, device)
+		freq := m.DebounceFrequency
+		if freq == 0 {
+			freq = DebounceFrequency
+		}
+
+		ctrl = NewController(conn, device, freq)
 		m.controllers[ix] = ctrl
 	}
 
