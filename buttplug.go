@@ -48,7 +48,7 @@ func NewRequestServerInfo() *RequestServerInfo {
 }
 
 // Broadcaster is used for creating multiple event loops on the same Buttplug
-// server.
+// server. A zero-value Broadcaster instance is a valid instance.
 type Broadcaster struct {
 	dst  map[chan<- Message]struct{}
 	mut  sync.Mutex
@@ -57,9 +57,7 @@ type Broadcaster struct {
 
 // NewBroadcaster creates a new broadcaster.
 func NewBroadcaster() *Broadcaster {
-	return &Broadcaster{
-		dst: make(map[chan<- Message]struct{}),
-	}
+	return &Broadcaster{}
 }
 
 // Start starts the broadcaster.
@@ -97,6 +95,9 @@ func (b *Broadcaster) Subscribe(ch chan<- Message) {
 	b.mut.Lock()
 	if b.void {
 		panic("Subscribe called on voided Broadcaster")
+	}
+	if b.dst == nil {
+		b.dst = make(map[chan<- Message]struct{})
 	}
 	b.dst[ch] = struct{}{}
 	b.mut.Unlock()

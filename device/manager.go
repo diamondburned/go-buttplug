@@ -9,11 +9,17 @@ import (
 )
 
 // Manager holds an internal state of devices and does its best to keep it
-// updated.
+// updated. A zero-value Manager instance is a valid Manager instance.
 type Manager struct {
-	mutex   sync.RWMutex
-	devices map[buttplug.DeviceIndex]Device
-	working sync.WaitGroup
+	// Broadcaster echoes the event channels that Manager listens to. This is
+	// useful for guaranteeing that events are only handled after Manager itself
+	// is updated.
+	buttplug.Broadcaster
+
+	devices     map[buttplug.DeviceIndex]Device
+	controllers map[buttplug.DeviceIndex]*Controller
+	mutex       sync.RWMutex
+	working     sync.WaitGroup
 }
 
 // NewManager creates a new device manager.
@@ -41,14 +47,32 @@ func (m *Manager) Devices() []Device {
 // device is not found, then nil is returned.
 func (m *Manager) Controller(conn ButtplugConnection, ix buttplug.DeviceIndex) *Controller {
 	m.mutex.RLock()
-	device, ok := m.devices[ix]
+	ctrl, ok := m.controllers[ix]
 	m.mutex.RUnlock()
 
-	if !ok {
-		return nil
+	if ok {
+		return ctrl
 	}
 
-	return NewController(conn, device)
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	ctrl, ok = m.controllers[ix]
+	if ok {
+		return ctrl
+	}
+
+	device, ok := m.devices[ix]
+	if ok {
+		if m.controllers == nil {
+			m.controllers = make(map[buttplug.DeviceIndex]*Controller, 1)
+		}
+
+		ctrl = NewController(conn, device)
+		m.controllers[ix] = ctrl
+	}
+
+	return nil
 }
 
 // Listen listens to the given channel asynchronously. The listening routine
@@ -61,8 +85,14 @@ func (m *Manager) Listen(ch <-chan buttplug.Message) {
 func (m *Manager) listen(ch <-chan buttplug.Message) {
 	defer m.working.Done()
 
+	echo := make(chan buttplug.Message)
+	defer close(echo)
+
+	m.Broadcaster.Start(echo)
+
 	for ev := range ch {
 		m.onMessage(ev)
+		echo <- ev
 	}
 }
 
@@ -70,18 +100,16 @@ func (m *Manager) onMessage(ev buttplug.Message) {
 	switch ev := ev.(type) {
 	case *buttplug.DeviceAdded:
 		m.mutex.Lock()
-		defer m.mutex.Unlock()
-
 		m.addDevice(*ev)
+		m.mutex.Unlock()
 
 	case *buttplug.DeviceRemoved:
 		m.mutex.Lock()
-		defer m.mutex.Unlock()
+		m.removeDevice(ev.DeviceIndex)
+		m.mutex.Unlock()
 
 	case *buttplug.DeviceList:
 		m.mutex.Lock()
-		defer m.mutex.Unlock()
-
 		m.devices = map[buttplug.DeviceIndex]Device{}
 		for _, device := range ev.Devices {
 			m.addDevice(buttplug.DeviceAdded{
@@ -90,6 +118,7 @@ func (m *Manager) onMessage(ev buttplug.Message) {
 				DeviceMessages: device.DeviceMessages,
 			})
 		}
+		m.mutex.Unlock()
 	}
 }
 
