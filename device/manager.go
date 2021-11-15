@@ -75,6 +75,20 @@ func (m *Manager) Controller(conn ButtplugConnection, ix buttplug.DeviceIndex) *
 	return nil
 }
 
+// ListenPassthrough calls both Listen and the broadcaster's Subscribe to return
+// a new event channel that has events passed through from the given channel.
+// This is a helper method that abstracts the calls that most people would do
+// all in one line. This way, the user can write this:
+//
+//    for ev := range m.ListenPassthrough(ws.Open(ctx)) {
+//    }
+//
+func (m *Manager) ListenPassthrough(ch <-chan buttplug.Message) <-chan buttplug.Message {
+	msgs := m.Broadcaster.Listen()
+	m.Listen(ch)
+	return msgs
+}
+
 // Listen listens to the given channel asynchronously. The listening routine
 // stops when the channel closes.
 func (m *Manager) Listen(ch <-chan buttplug.Message) {
