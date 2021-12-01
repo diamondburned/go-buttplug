@@ -283,12 +283,12 @@ func (c *Controller) Rotate(rotations map[int]Rotation) error {
 }
 
 func (c *Controller) sendAsyncable(canDebounce bool, cmd buttplug.Message) error {
-	send := func() error {
+	send := func(ctx context.Context) error {
 		if c.async {
-			c.conn.Send(c.ctx, cmd)
+			c.conn.Send(ctx, cmd)
 			return nil
 		} else {
-			_, err := c.conn.Command(c.ctx, cmd)
+			_, err := c.conn.Command(ctx, cmd)
 			return err
 		}
 	}
@@ -296,9 +296,9 @@ func (c *Controller) sendAsyncable(canDebounce bool, cmd buttplug.Message) error
 	if canDebounce && c.State.Debounce.Frequency > 0 {
 		// Errors are passed into the channel anyway, so we can just ignore it
 		// here.
-		c.State.Debounce.Run(func() { send() })
+		c.State.Debounce.Run(c.ctx, func(ctx context.Context) { send(ctx) })
 		return nil
 	}
 
-	return send()
+	return send(c.ctx)
 }

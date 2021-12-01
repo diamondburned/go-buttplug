@@ -1,6 +1,7 @@
 package debounce
 
 import (
+	"context"
 	"sync"
 	"time"
 )
@@ -13,10 +14,10 @@ type Debouncer struct {
 
 	mut sync.Mutex
 	now time.Time
-	fun func()
+	fun func(context.Context)
 }
 
-func (d *Debouncer) Run(f func()) {
+func (d *Debouncer) Run(ctx context.Context, f func(context.Context)) {
 	d.mut.Lock()
 	defer d.mut.Unlock()
 
@@ -28,7 +29,7 @@ func (d *Debouncer) Run(f func()) {
 	offset := now.Sub(then)
 
 	if offset > d.Frequency {
-		go f()
+		f(ctx)
 		return
 	}
 
@@ -39,12 +40,18 @@ func (d *Debouncer) Run(f func()) {
 		return
 	}
 
-	time.AfterFunc(offset, func() {
-		d.mut.Lock()
-		fn := d.fun
-		d.fun = nil
-		d.mut.Unlock()
+	t := time.NewTimer(offset)
+	go func() {
+		defer t.Stop()
 
-		fn()
-	})
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+			d.mut.Lock()
+			d.fun(ctx)
+			d.fun = nil
+			d.mut.Unlock()
+		}
+	}()
 }
