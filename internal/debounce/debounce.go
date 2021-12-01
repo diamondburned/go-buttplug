@@ -6,7 +6,8 @@ import (
 )
 
 // Debouncer is an abstraction that allows debouncing a callback so that it may
-// only be applied
+// only be applied after a certain duration. Debouncer and its methods are safe
+// to be used concurrently.
 type Debouncer struct {
 	Frequency time.Duration
 

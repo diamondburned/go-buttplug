@@ -80,7 +80,7 @@ func (m *Manager) Controller(conn ButtplugConnection, ix buttplug.DeviceIndex) *
 			freq = DebounceFrequency
 		}
 
-		ctrl = NewController(conn, device, freq)
+		ctrl = NewController(conn, device, NewControllerState(freq))
 		m.controllers[ix] = ctrl
 	}
 
@@ -136,7 +136,6 @@ func (m *Manager) onMessage(ev buttplug.Message) {
 
 	case *buttplug.DeviceList:
 		m.mutex.Lock()
-		m.devices = map[buttplug.DeviceIndex]Device{}
 		for _, device := range ev.Devices {
 			m.addDevice(buttplug.DeviceAdded{
 				DeviceName:     device.DeviceName,
@@ -155,6 +154,10 @@ func (m *Manager) addDevice(device buttplug.DeviceAdded) {
 		if err := json.Unmarshal(device.DeviceMessages, &ex); err == nil {
 			msgs = convertDeviceMessagesEx(ex)
 		}
+	}
+
+	if m.devices == nil {
+		m.devices = map[buttplug.DeviceIndex]Device{}
 	}
 
 	m.devices[device.DeviceIndex] = Device{

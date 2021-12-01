@@ -58,29 +58,37 @@ var _ ButtplugConnection = (*buttplug.Websocket)(nil)
 type Controller struct {
 	// Device is the device that this controller belongs to.
 	Device
+	State *ControllerState
 
-	state *controllerState
-	conn  ButtplugConnection
-	ctx   context.Context
+	conn ButtplugConnection
+	ctx  context.Context
 
 	async bool
 }
 
-type controllerState struct {
-	debounce debounce.Debouncer
+// ControllerState is the state of a controller. This state should be unique to
+// each device, so Controllers that share the same device must share the same
+// state.
+type ControllerState struct {
+	Debounce debounce.Debouncer
+}
+
+// NewControllerState initializes a new ControllerState.
+func NewControllerState(freq time.Duration) *ControllerState {
+	return &ControllerState{
+		Debounce: debounce.Debouncer{
+			Frequency: freq,
+		},
+	}
 }
 
 // NewController creates a new device controller.
-func NewController(conn ButtplugConnection, device Device, debounceFreq time.Duration) *Controller {
+func NewController(conn ButtplugConnection, device Device, state *ControllerState) *Controller {
 	return &Controller{
 		Device: device,
+		State:  state,
 		conn:   conn,
 		ctx:    context.Background(),
-		state: &controllerState{
-			debounce: debounce.Debouncer{
-				Frequency: debounceFreq,
-			},
-		},
 	}
 }
 
@@ -91,6 +99,14 @@ func NewController(conn ButtplugConnection, device Device, debounceFreq time.Dur
 func (c *Controller) WithAsync() *Controller {
 	copy := *c
 	copy.async = true
+	return &copy
+}
+
+// WithoutAsync returns a new Controller that is not asynchronous. It undoes
+// WithAsync.
+func (c *Controller) WithoutAsync() *Controller {
+	copy := *c
+	copy.async = false
 	return &copy
 }
 
@@ -277,10 +293,10 @@ func (c *Controller) sendAsyncable(canDebounce bool, cmd buttplug.Message) error
 		}
 	}
 
-	if canDebounce && c.state.debounce.Frequency > 0 {
+	if canDebounce && c.State.Debounce.Frequency > 0 {
 		// Errors are passed into the channel anyway, so we can just ignore it
 		// here.
-		c.state.debounce.Run(func() { send() })
+		c.State.Debounce.Run(func() { send() })
 		return nil
 	}
 
