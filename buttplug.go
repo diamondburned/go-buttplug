@@ -10,14 +10,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
+	"log/slog"
 	"sync/atomic"
 	"time"
 
-	"github.com/diamondburned/go-buttplug/internal/errorbox"
-	"github.com/diamondburned/go-buttplug/internal/lazytime"
-	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
+	"github.com/cenkalti/backoff/v5"
+	"github.com/coder/websocket"
+	"github.com/coder/websocket/wsjson"
+	"github.com/puzpuzpuz/xsync/v4"
+	"golang.org/x/sync/errgroup"
 )
 
 //go:generate go run ./internal/cmd/genschema
@@ -26,15 +27,33 @@ import (
 // server or an internal event.
 func (id ID) IsServerEvent() bool { return id == 0 }
 
-type idGenerator uint32
+// WebsocketReset is an empty message that is sent from the websocket loop to
+// indicate that the connection has been reset and that internal state should be
+// cleared.
+type WebsocketReset struct{}
 
-// Next returns the next generated ID. It is not thread-safe.
-func (id *idGenerator) Next() ID {
-	return ID(atomic.AddUint32((*uint32)(id), 1))
-}
+func (*WebsocketReset) MessageID() ID            { return 0 }
+func (*WebsocketReset) MessageType() MessageType { return MessageType("WebsocketReset") }
+func (*WebsocketReset) SetMessageID(ID)          {}
+
+const (
+	// WebsocketDialTimeout is the maximum duration each dial.
+	WebsocketDialTimeout = 10 * time.Second
+	// WebsocketDialDelay is the delay between dials.
+	WebsocketDialDelay = time.Second
+)
 
 // Version is the buttplug.io schema version.
 const Version = 2
+
+// WebsocketBackoff is the default backoff policy for reconnecting to a Buttplug
+// server over websocket.
+var WebsocketBackoff backoff.BackOff = &backoff.ExponentialBackOff{
+	InitialInterval:     200 * time.Millisecond,
+	RandomizationFactor: 0.5,
+	Multiplier:          1.5,
+	MaxInterval:         2 * time.Second,
+}
 
 // NewRequestServerInfo creates a new RequestServerInfo with the current client
 // information.
@@ -47,518 +66,281 @@ func NewRequestServerInfo() *RequestServerInfo {
 	}
 }
 
-// Broadcaster is used for creating multiple event loops on the same Buttplug
-// server. A zero-value Broadcaster instance is a valid instance.
-type Broadcaster struct {
-	dst  map[chan<- Message]struct{}
-	mut  sync.Mutex
-	void bool
-}
-
-// NewBroadcaster creates a new broadcaster.
-func NewBroadcaster() *Broadcaster {
-	return &Broadcaster{}
-}
-
-// Start starts the broadcaster.
-func (b *Broadcaster) Start(src <-chan Message) {
-	b.mut.Lock()
-	if b.void {
-		panic("Start called on voided Broadcaster")
-	}
-	b.mut.Unlock()
-
-	go func() {
-		for op := range src {
-			b.mut.Lock()
-
-			for ch := range b.dst {
-				ch <- op
-			}
-
-			b.mut.Unlock()
-		}
-
-		b.mut.Lock()
-		b.void = true
-
-		for ch := range b.dst {
-			close(ch)
-		}
-
-		b.mut.Unlock()
-	}()
-}
-
-// Subscribe subscribes the given channel
-func (b *Broadcaster) Subscribe(ch chan<- Message) {
-	b.mut.Lock()
-	if b.void {
-		panic("Subscribe called on voided Broadcaster")
-	}
-	if b.dst == nil {
-		b.dst = make(map[chan<- Message]struct{})
-	}
-	b.dst[ch] = struct{}{}
-	b.mut.Unlock()
-}
-
-// Listen returns a newly subscribed Op channel.
-func (b *Broadcaster) Listen() <-chan Message {
-	ch := make(chan Message, 1)
-	b.Subscribe(ch)
-	return ch
-}
-
 type command struct {
 	msg   Message
-	reply chan Message
+	reply func(Message)
 }
 
 // Websocket describes a websocket connection to the Buttplug server.
 type Websocket struct {
-	err errorbox.Box
-	cmd chan []command
+	id   atomic.Uint32
+	msgs chan Message
+	send chan command
+	// track which commands are waiting for replies.
+	waitingCommands *xsync.Map[ID, command]
 
-	ctxMu  sync.Mutex
-	ctx    context.Context
-	cancel context.CancelFunc
-
-	id idGenerator
-
-	// DialTimeout is the maximum duration each dial.
-	DialTimeout time.Duration
-	// DialDelay is the delay between dials.
-	DialDelay time.Duration
+	logger *slog.Logger
+	addr   string
 }
 
-// NewWebsocket creates a new Buttplug Websocket client instance.
-func NewWebsocket() *Websocket {
+// NewWebsocket creates a new Buttplug Websocket client instance and optionally
+// a [slog.Logger] for internal logging.
+func NewWebsocket(wsAddr string, logger *slog.Logger) *Websocket {
+	if logger == nil {
+		logger = slog.Default()
+	}
+
+	logger = logger.
+		WithGroup("buttplug").
+		With("addr", wsAddr)
+
 	return &Websocket{
-		cmd:         make(chan []command),
-		DialTimeout: 10 * time.Second,
-		DialDelay:   time.Second,
+		msgs:            make(chan Message, 1),
+		send:            make(chan command),
+		waitingCommands: xsync.NewMap[ID, command](),
+
+		logger: logger,
+		addr:   wsAddr,
 	}
 }
 
-// LastError returns the last error in the websocket. It's recommended to call
-// this method once the Websocket channel is closed to ensure that it has
-// gracefully exited.
-func (w *Websocket) LastError() error {
-	return w.err.Get()
+// Messages returns a channel that receives all messages from the websocket
+// connection. You must call [Websocket.Start] before any messages are received.
+func (w *Websocket) Messages() <-chan Message {
+	return w.msgs
 }
 
-// Open opens the websocket connection by continuously dialing it and ensuring
-// its best that the connection stays alive. If the Websocket is already opened,
-// then it'll be reconnected.
-//
-// If the given context is cancelled OR if the websocket stumbles upon an
-// unrecoverable error, then the channel is closed with the last event being of
-// type InternalError. A more convenient way of error checking can be done by
-// calling the LastError method.
-func (w *Websocket) Open(ctx context.Context, url string) <-chan Message {
-	w.ctxMu.Lock()
-	defer w.ctxMu.Unlock()
-
-	if w.ctx != nil {
-		select {
-		case <-w.ctx.Done():
-			// dead
-		default:
-			// still alive, kill
-			w.cancel()
-		}
-	}
-
-	w.ctx, w.cancel = context.WithCancel(ctx)
-	ev := make(chan Message)
-	go w.spin(ctx, ev, url)
-
-	return ev
-}
-
-func (w *Websocket) spin(ctx context.Context, ev chan<- Message, url string) {
-	defer close(ev)
-
-	pending := map[ID]command{}
-
-	// Create our own event channel to directly receive events before passing it
-	// off to the user. This channel is never closed.
-	wsMsg := make(chan Message, 1)
-
-	var wsCmd chan []command
-
-	reconnect := make(chan struct{}, 1)
-
-	queueReconnect := func() {
-		select {
-		case reconnect <- struct{}{}:
-			// ok
-		default:
-			// channel is already filled, we're good
-		}
-	}
-	queueReconnect()
-
-	s := loopState{
-		w:         w,
-		ctx:       ctx,
-		sends:     make(chan sendPacket),
-		events:    ev,
-		pending:   pending,
-		reconnect: queueReconnect,
-	}
-
-	closeConn := func() {
-		if s.conn != nil {
-			s.conn.Close()
-		}
-	}
-	// Always close the connection when we exit.
-	defer closeConn()
-
-	var heartbeat lazytime.Ticker
-	var heartrate time.Duration
-	var heartPing [2]time.Time // [sent, received]
-	var heartReply <-chan Message
-
-	ensureAlive := func() (alive bool) {
-		if heartPing[0].Add(heartrate).Before(heartPing[1]) {
-			// Missed a beat, reconnect.
-			w.sendErr(ctx, ev, errors.New("server missed a heartbeat"), "", false)
-			queueReconnect()
-			return false
-		}
-		return true
-	}
-
-	go func() {
-	}()
+// Start starts the websocket connection persistently and blocks until the given
+// context is cancelled. It transparently reconnects on connection or loop
+// failure with a backoff defined by [WebsocketBackoff].
+func (w *Websocket) Start(ctx context.Context) error {
+	retryTicker := backoff.NewTicker(WebsocketBackoff)
+	defer retryTicker.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			return ctx.Err()
 
-		case <-heartReply:
-			heartPing[1] = time.Now()
-			ensureAlive()
+		case <-retryTicker.C:
+			slog.DebugContext(ctx,
+				"attempting to connect to websocket")
 
-		case <-heartbeat.C:
-			if ensureAlive() {
-				s.sendCommand(command{msg: &Ping{ID: w.id.Next()}})
-				heartPing[0] = time.Now()
+			if err := w.start(ctx); err != nil {
+				slog.ErrorContext(ctx,
+					"websocket connection failed, will retry in a bit...",
+					"error", err)
+			}
+		}
+	}
+}
+
+func (w *Websocket) start(ctx context.Context) error {
+	wsConn, _, err := websocket.Dial(ctx, w.addr, nil)
+	if err != nil {
+		return fmt.Errorf("failed to dial websocket: %w", err)
+	}
+	defer wsConn.CloseNow()
+
+	// deliver our first message.
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case w.msgs <- &WebsocketReset{}:
+	}
+
+	errg, ctx := errgroup.WithContext(ctx)
+
+	msgCh := make(chan Message, 1)
+	sendCh := make(chan command, 1)
+	heartbeatCh := make(chan struct{}, 1)
+
+	errg.Go(func() error {
+		slog := w.logger.
+			With("loop", "read")
+		defer slog.DebugContext(ctx, "read loop exiting")
+
+		var msgs []map[MessageType]json.RawMessage
+		for {
+			msgs = msgs[:0] // reuse backing array
+
+			if err := wsjson.Read(ctx, wsConn, &msgs); err != nil {
+				return fmt.Errorf("failed to read websocket message: %w", err)
 			}
 
-		case cmds := <-wsCmd:
-			s.sendCommand(cmds...)
+			for _, msg := range msgs {
+				for msgType, msgJSON := range msg {
+					fn, ok := knownMessages[msgType]
+					if !ok {
+						slog.WarnContext(ctx,
+							"ignoring unknown message with type",
+							"type", msgType,
+							"data", string(msgJSON))
+						continue
+					}
 
-		case msg := <-wsMsg:
-			// Clear the error.
-			w.err.Set(nil)
+					msg := fn()
+					if err := json.Unmarshal(msgJSON, msg); err != nil {
+						slog.ErrorContext(ctx,
+							"failed to unmarshal message",
+							"type", msgType,
+							"data", string(msgJSON),
+							"error", err)
+						continue
+					}
 
-			switch msg := msg.(type) {
-			case *ServerInfo:
-				// Verify version.
-				if msg.MessageVersion != Version {
-					err := VersionMismatchError{msg.MessageVersion}
-					w.sendErr(ctx, ev, err, "", true)
-					return
-				}
-				// Update the heartbeat duration. Half the duration to be extra
-				// careful.
-				if msg.MaxPingTime > 0 {
-					hrt := time.Duration(msg.MaxPingTime) * time.Millisecond / 2
-					heartbeat.Reset(hrt)
-				}
-			}
-
-			// Check if we have any pending commands.
-			cmd, ok := pending[msg.MessageID()]
-			if ok {
-				delete(pending, msg.MessageID())
-				select {
-				case cmd.reply <- msg:
-					// ok
-				case <-ctx.Done():
-					return
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					case msgCh <- msg:
+						continue
+					}
 				}
 			}
+		}
+	})
 
+	errg.Go(func() error {
+		slog := w.logger.
+			With("loop", "write")
+		defer slog.DebugContext(ctx, "write loop exiting")
+
+		var cmd command
+		for {
 			select {
-			case ev <- msg:
-				continue
 			case <-ctx.Done():
-				return
+				return ctx.Err()
+
+			case cmd = <-sendCh:
+				slog.DebugContext(ctx,
+					"sending message",
+					"msg.id", cmd.msg.MessageID(),
+					"msg.type", cmd.msg.MessageType())
+
+			case <-heartbeatCh:
+				cmd = command{msg: &Ping{ID: w.nextID()}}
+
+				slog.DebugContext(ctx,
+					"sending heartbeat ping",
+					"msg.id", cmd.msg.MessageID())
 			}
 
-		case <-reconnect:
-			// Close the old websocket if we haven't already. We can safely
-			// ignore the error here.
-			closeConn()
-			// Disable sending.
-			wsCmd = nil
-			close(s.sends)
-			heartbeat.Stop()
-
-			for {
-				connCtx, cancel := context.WithTimeout(ctx, w.DialTimeout)
-				c, _, err := websocket.DefaultDialer.DialContext(connCtx, url, nil)
-				cancel()
-
-				if err == nil {
-					s.conn = c
-					break
-				}
-
-				err = &DialError{err}
-				w.sendErr(ctx, ev, err, "", false)
-
-				// Wait for a while before retrying.
-				// TODO: implement exponential backoff.
-				select {
-				case <-time.After(w.DialDelay):
-					continue
-				case <-ctx.Done():
-					return
-				}
+			if err := wsjson.Write(ctx, wsConn, cmd.msg); err != nil {
+				return fmt.Errorf("failed to write websocket message: %w", err)
 			}
-
-			// If conn is nil for some reason, then bail. In the future, this
-			// might come in handy if we implement
-			if s.conn == nil {
-				return
-			}
-
-			// Start the read loop.
-			go s.readLoop(s.conn, wsMsg)
-			// Start the send/write loop.
-			s.sends = make(chan sendPacket)
-			go s.sendLoop(s.conn, s.sends)
-
-			// Send the handshake asynchronously.
-			handshake := NewRequestServerInfo()
-			handshake.ID = w.id.Next()
-			s.sendCommand(command{msg: handshake})
-
-			// Restore the command channel.
-			wsCmd = w.cmd
 		}
-	}
-}
+	})
 
-type loopState struct {
-	w         *Websocket
-	conn      *websocket.Conn
-	ctx       context.Context
-	sends     chan sendPacket
-	events    chan<- Message
-	pending   map[ID]command
-	reconnect func()
-}
+	errg.Go(func() error {
+		slog := w.logger.
+			With("loop", "main")
+		defer slog.DebugContext(ctx, "main loop exiting")
 
-func (s *loopState) sendErr(ctx context.Context, err error, wrap string, fatal bool) {
-	s.w.sendErr(ctx, s.events, err, "failed to marshal message for sending", false)
-}
+		heartbeat := time.NewTicker(0)
+		heartbeat.Stop()
 
-func (s *loopState) sendCommand(cmds ...command) {
-	msgs := make([]Messages, len(cmds))
-	for i, cmd := range cmds {
-		msgs[i] = Messages{cmd.msg.MessageType(): cmd.msg}
-		// Store the pending message if the caller expects a reply.
-		if cmd.reply != nil {
-			s.pending[cmd.msg.MessageID()] = cmds[i]
-		}
-	}
-
-	select {
-	case <-s.ctx.Done():
-	case s.sends <- sendPacket{cmds, msgs}:
-	}
-}
-
-type sendPacket struct {
-	cmds []command
-	msgs []Messages
-}
-
-func (s *loopState) sendLoop(conn *websocket.Conn, sends <-chan sendPacket) {
-	defer s.reconnect()
-
-	for v := range sends {
-		err := conn.WriteJSON(v.msgs)
-		if err == nil {
-			continue
-		}
-
-		// Log the error.
-		s.events <- &InternalError{
-			ID:  0, // system error
-			Err: errors.Wrap(err, "failed to send to WS"),
-		}
-
-		// Fire the same error to all waiting commands.
-		for i, cmd := range v.cmds {
-			if v.cmds[i].reply == nil {
-				// Ignore since asynchronous.
-				continue
-			}
-
-			errorEv := &InternalError{
-				ID:  cmd.msg.MessageID(),
-				Err: err,
-			}
-
+		for {
 			select {
-			case <-s.ctx.Done():
-				return
-			case s.events <- errorEv:
-				continue
-			}
-		}
+			case <-ctx.Done():
+				return ctx.Err()
 
-		return
-	}
-}
+			case msg := <-msgCh:
+				switch msg := msg.(type) {
+				case *ServerInfo:
+					if msg.MessageVersion != Version {
+						slog.ErrorContext(ctx,
+							"server version mismatch, bailing out",
+							"server_version", msg.MessageVersion,
+							"client_version", Version)
 
-func (s *loopState) readLoop(conn *websocket.Conn, dst chan<- Message) {
-	defer s.reconnect()
+						// attempt to gracefully close the connection
+						wsConn.Close(websocket.StatusPolicyViolation, "version mismatch")
 
-	for {
-		// Do a context check so we can call continue and bail instead of doing
-		// if-checks on sendErr.
-		select {
-		case <-s.ctx.Done():
-			return
-		default:
-		}
+						return fmt.Errorf(
+							"version mismatch: server has %d, client has %d",
+							msg.MessageVersion, Version,
+						)
+					}
 
-		_, r, err := conn.NextReader()
-		if err != nil {
-			return
-		}
-
-		var messages []map[MessageType]json.RawMessage
-
-		if err := json.NewDecoder(r).Decode(&messages); err != nil {
-			sendErr(s.ctx, dst, err, "cannot decode JSON packet", false)
-			continue
-		}
-
-		for _, msg := range messages {
-			for t, raw := range msg {
-				fn, ok := knownMessages[t]
-				if !ok {
-					err := &UnknownEventError{t, raw}
-					sendErr(s.ctx, dst, err, "", false)
-					continue
+					if msg.MaxPingTime > 0 {
+						hrt := time.Duration(msg.MaxPingTime) * time.Millisecond / 2
+						heartbeat.Reset(hrt)
+					}
 				}
 
-				msg := fn()
-				if err := json.Unmarshal(raw, msg); err != nil {
-					err = fmt.Errorf("cannot unmarshal event %s: %w", t, err)
-					sendErr(s.ctx, dst, err, "", false)
-					continue
+				// reply to any waiting command.
+				if cmd, ok := w.waitingCommands.LoadAndDelete(msg.MessageID()); ok {
+					cmd.reply(msg)
 				}
 
 				select {
-				case dst <- msg:
+				case <-ctx.Done():
+					return ctx.Err()
+				case w.msgs <- msg:
 					// ok
-				case <-s.ctx.Done():
-					return
 				}
+
+			case <-heartbeat.C:
+				// ensure the heartbeat channel has something in it but don't
+				// force it.
+				teaseChannel(heartbeatCh, struct{}{})
 			}
 		}
-	}
+	})
+
+	return errg.Wait()
 }
 
-func (w *Websocket) sendErr(
-	ctx context.Context, ev chan<- Message, err error, wrap string, fatal bool) bool {
-
-	w.err.Set(err)
-	return sendErr(ctx, ev, err, wrap, fatal)
+func (w *Websocket) nextID() ID {
+	return ID(w.id.Add(1))
 }
 
-func sendErr(ctx context.Context, ev chan<- Message, err error, wrap string, fatal bool) bool {
-	event := newInternalError(err, wrap, fatal)
-
-	select {
-	case <-ctx.Done():
-		return false
-	case ev <- event:
-		return true
-	}
+// Send queues the given messages to be sent in the main [Websocket.Start] loop.
+// An error is only returned if context is cancelled.
+//
+// It is safe to call this method concurrently.
+func (w *Websocket) Send(ctx context.Context, msg Message) error {
+	return w.sendWithReply(ctx, msg, nil)
 }
 
-// Send sends the given messages instance over the websocket asynchronously. If
-// the user needs a synchronous sending API, they should use the Command method.
-func (w *Websocket) Send(ctx context.Context, msgs ...Message) {
-	cmds := make([]command, len(msgs))
-	for i, msg := range msgs {
-		msg.SetMessageID(w.id.Next())
-		cmds[i] = command{msg: msg}
-	}
+// SendCommand sends a message and waits for a reply. An error is only returned
+// if context is cancelled.
+//
+// It is safe to call this method concurrently.
+func (w *Websocket) SendCommand(ctx context.Context, msg Message) (Message, error) {
+	msg.SetMessageID(w.nextID())
 
-	select {
-	case <-ctx.Done():
-	case w.cmd <- cmds:
-	}
-}
-
-// Command sends a message over the websocket and waits for a reply. If the
-// caller calls this method after the websocket is closed, the function will
-// block forever, since a websocket cannot be started back up. The returned
-// message is never nil, but it may be of type InternalError or Error, which the
-// function will unbox into the return error type.
-func (w *Websocket) Command(ctx context.Context, msg Message) (Message, error) {
-	msg.SetMessageID(w.id.Next())
-	cmd := command{
-		msg:   msg,
-		reply: make(chan Message, 1),
+	reply := make(chan Message, 1)
+	if err := w.sendWithReply(ctx, msg, func(m Message) { reply <- m }); err != nil {
+		return nil, err
 	}
 
 	select {
 	case <-ctx.Done():
-		err := errors.Wrap(ctx.Err(), "timed out sending")
-		return &InternalError{Err: err}, err
-	case w.cmd <- []command{cmd}:
-		// ok
-	}
-
-	select {
-	case <-ctx.Done():
-		err := errors.Wrap(ctx.Err(), "timed out waiting")
-		return &InternalError{Err: err}, err
-	case reply := <-cmd.reply:
-		switch reply := reply.(type) {
-		case *InternalError:
-			return reply, reply.Err
-		case *Error:
-			return reply, reply
-		default:
-			return reply, nil
-		}
+		return nil, ctx.Err()
+	case r := <-reply:
+		return r, nil
 	}
 }
 
-// CommandCh is a channel variant of Command. The returned channel is never
-// closed and will be sent into once.
-func (w *Websocket) CommandCh(ctx context.Context, msg Message) <-chan Message {
-	msg.SetMessageID(w.id.Next())
-	cmd := command{
-		msg:   msg,
-		reply: make(chan Message, 1),
+func (w *Websocket) sendWithReply(ctx context.Context, msg Message, reply func(Message)) error {
+	msg.SetMessageID(w.nextID())
+
+	cmd := command{msg: msg, reply: reply}
+	w.waitingCommands.Store(msg.MessageID(), cmd)
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case w.send <- cmd:
+		return nil
 	}
+}
 
-	go func() {
-		select {
-		case <-ctx.Done():
-			err := errors.Wrap(ctx.Err(), "timed out sending")
-			cmd.reply <- &InternalError{Err: err}
-		case w.cmd <- []command{cmd}:
-			// ok
-		}
-	}()
-
-	return cmd.reply
+// teaseChannel tries to put a value into a channel without blocking.
+func teaseChannel[T any](ch chan<- T, v T) {
+	select {
+	case ch <- v:
+	default:
+	}
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode"
@@ -81,10 +82,7 @@ func Parse(s *jsonschema.Schema) *Schema {
 			log.Println("Messages is not object?")
 		}
 
-		dst.Messages = Messages{
-			BaseType: ob.BaseType,
-			Fields:   ob.Fields,
-		}
+		dst.Messages = Messages(ob)
 	}
 
 	return &dst
@@ -129,12 +127,9 @@ func (n namePiece) String() string {
 }
 
 func (r *resolver) goImport(imp string) {
-	for _, goImport := range r.GoImports {
-		if goImport == imp {
-			return
-		}
+	if !slices.Contains(r.GoImports, imp) {
+		r.GoImports = append(r.GoImports, imp)
 	}
-	r.GoImports = append(r.GoImports, imp)
 }
 
 func (r *resolver) add(name namePiece, typ *jsonschema.Schema) Type {
@@ -152,7 +147,7 @@ func (r *resolver) add(name namePiece, typ *jsonschema.Schema) Type {
 		}
 		if len(union.Types) > 0 {
 			r.goImport("encoding/json")
-			union.BaseType.goType = fmt.Sprintf(
+			union.goType = fmt.Sprintf(
 				"json.RawMessage /* %s */",
 				strings.Join(types, ", "),
 			)

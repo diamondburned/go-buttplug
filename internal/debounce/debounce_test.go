@@ -1,6 +1,7 @@
 package debounce
 
 import (
+	"context"
 	"sort"
 	"testing"
 	"time"
@@ -16,7 +17,7 @@ func TestDebounce(t *testing.T) {
 	go func() {
 		for i := 0; i < 5; i++ {
 			i := i
-			d.Run(func() { ch <- i })
+			d.Run(context.Background(), func(context.Context) { ch <- i })
 		}
 	}()
 
