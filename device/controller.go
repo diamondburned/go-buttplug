@@ -106,7 +106,7 @@ func (c *Controller) SendVibrate(ctx context.Context, motors ...VibrationMotor) 
 	})
 }
 
-// VibrateAll is a convenience method around [Controller.SendVibrate] that
+// SendVibrateAll is a convenience method around [Controller.SendVibrate] that
 // vibrates all motors at the given speed.
 func (c *Controller) SendVibrateAll(ctx context.Context, speed float64) error {
 	if c.bufVibrateSpeeds == nil {
