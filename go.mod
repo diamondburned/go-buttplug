@@ -1,6 +1,6 @@
 module github.com/diamondburned/go-buttplug
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/pkg/errors v0.9.1
@@ -16,4 +16,7 @@ require (
 
 require github.com/coder/websocket v1.8.14
 
-require github.com/cenkalti/backoff/v5 v5.0.3
+require (
+	github.com/cenkalti/backoff/v5 v5.0.3
+	github.com/lmittmann/tint v1.1.2
+)

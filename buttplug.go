@@ -9,8 +9,10 @@ package buttplug
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -18,7 +20,6 @@ import (
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
 	"github.com/puzpuzpuz/xsync/v4"
-	"golang.org/x/sync/errgroup"
 )
 
 //go:generate go run ./internal/cmd/genschema
@@ -76,6 +77,7 @@ type Websocket struct {
 	id   atomic.Uint32
 	msgs chan Message
 	send chan command
+	beat chan time.Time
 	// track which commands are waiting for replies.
 	waitingCommands *xsync.Map[ID, command]
 
@@ -92,11 +94,12 @@ func NewWebsocket(wsAddr string, logger *slog.Logger) *Websocket {
 
 	logger = logger.
 		WithGroup("buttplug").
-		With("addr", wsAddr)
+		With("ws.addr", wsAddr)
 
 	return &Websocket{
 		msgs:            make(chan Message, 1),
-		send:            make(chan command),
+		send:            make(chan command, 1),
+		beat:            make(chan time.Time, 1),
 		waitingCommands: xsync.NewMap[ID, command](),
 
 		logger: logger,
@@ -117,25 +120,30 @@ func (w *Websocket) Start(ctx context.Context) error {
 	retryTicker := backoff.NewTicker(WebsocketBackoff)
 	defer retryTicker.Stop()
 
-	for {
+	for attempt := 0; ctx.Err() == nil; attempt++ {
+		w.id.Store(0)
+
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 
 		case <-retryTicker.C:
+			slog := w.logger.With("ws.attempt", attempt)
 			slog.DebugContext(ctx,
 				"attempting to connect to websocket")
 
-			if err := w.start(ctx); err != nil {
+			if err := w.start(ctx, slog); err != nil && !errors.Is(err, context.Canceled) {
 				slog.ErrorContext(ctx,
 					"websocket connection failed, will retry in a bit...",
 					"error", err)
 			}
 		}
 	}
+
+	return ctx.Err()
 }
 
-func (w *Websocket) start(ctx context.Context) error {
+func (w *Websocket) start(ctx context.Context, slog *slog.Logger) error {
 	wsConn, _, err := websocket.Dial(ctx, w.addr, nil)
 	if err != nil {
 		return fmt.Errorf("failed to dial websocket: %w", err)
@@ -149,14 +157,20 @@ func (w *Websocket) start(ctx context.Context) error {
 	case w.msgs <- &WebsocketReset{}:
 	}
 
-	errg, ctx := errgroup.WithContext(ctx)
-
 	msgCh := make(chan Message, 1)
-	sendCh := make(chan command, 1)
-	heartbeatCh := make(chan struct{}, 1)
 
-	errg.Go(func() error {
-		slog := w.logger.
+	// Begin a new lifetime just for the websocket read and write loops, since
+	// these being cancelled immediately ends the connection.
+	wsCtx, wsCancel := context.WithCancel(context.Background())
+	defer wsCancel()
+
+	var wsGroup sync.WaitGroup
+	defer wsGroup.Wait()
+
+	wsGroup.Go(func() {
+		defer wsCancel()
+
+		slog := slog.
 			With("loop", "read")
 		defer slog.DebugContext(ctx, "read loop exiting")
 
@@ -164,8 +178,19 @@ func (w *Websocket) start(ctx context.Context) error {
 		for {
 			msgs = msgs[:0] // reuse backing array
 
-			if err := wsjson.Read(ctx, wsConn, &msgs); err != nil {
-				return fmt.Errorf("failed to read websocket message: %w", err)
+			if err := wsjson.Read(wsCtx, wsConn, &msgs); err != nil {
+				var closeErr websocket.CloseError
+				if !errors.As(err, &closeErr) {
+					slog.ErrorContext(ctx,
+						"failed to read websocket message",
+						"err", err)
+				} else {
+					slog.DebugContext(ctx,
+						"websocket closed by server while reading",
+						"code", closeErr.Code,
+						"reason", closeErr.Reason)
+				}
+				return
 			}
 
 			for _, msg := range msgs {
@@ -189,9 +214,14 @@ func (w *Websocket) start(ctx context.Context) error {
 						continue
 					}
 
+					slog.DebugContext(ctx,
+						"successfully read and decoded websocket message from server",
+						"msg.id", msg.MessageID(),
+						"msg.type", msg.MessageType())
+
 					select {
-					case <-ctx.Done():
-						return ctx.Err()
+					case <-wsCtx.Done():
+						return
 					case msgCh <- msg:
 						continue
 					}
@@ -200,95 +230,142 @@ func (w *Websocket) start(ctx context.Context) error {
 		}
 	})
 
-	errg.Go(func() error {
-		slog := w.logger.
+	wsGroup.Go(func() {
+		defer wsCancel()
+
+		slog := slog.
 			With("loop", "write")
 		defer slog.DebugContext(ctx, "write loop exiting")
 
 		var cmd command
 		for {
 			select {
-			case <-ctx.Done():
-				return ctx.Err()
+			case <-wsCtx.Done():
+				return
 
-			case cmd = <-sendCh:
+			case cmd = <-w.send:
 				slog.DebugContext(ctx,
 					"sending message",
 					"msg.id", cmd.msg.MessageID(),
 					"msg.type", cmd.msg.MessageType())
 
-			case <-heartbeatCh:
+			case t := <-w.beat:
 				cmd = command{msg: &Ping{ID: w.nextID()}}
 
 				slog.DebugContext(ctx,
 					"sending heartbeat ping",
-					"msg.id", cmd.msg.MessageID())
+					"msg.id", cmd.msg.MessageID(),
+					"beat_time", t)
 			}
 
-			if err := wsjson.Write(ctx, wsConn, cmd.msg); err != nil {
-				return fmt.Errorf("failed to write websocket message: %w", err)
+			slog.DebugContext(ctx,
+				"writing websocket message to server",
+				"msg.id", cmd.msg.MessageID(),
+				"msg.type", cmd.msg.MessageType())
+
+			if err := wsjson.Write(wsCtx, wsConn, cmd.msg); err != nil {
+				slog.ErrorContext(ctx,
+					"failed to write websocket message",
+					"msg.id", cmd.msg.MessageID(),
+					"msg.type", cmd.msg.MessageType(),
+					"err", err)
+				return
 			}
 		}
 	})
 
-	errg.Go(func() error {
-		slog := w.logger.
-			With("loop", "main")
-		defer slog.DebugContext(ctx, "main loop exiting")
+	var heartbeat <-chan time.Time
+	var loopError error
+mainLoop:
+	for {
+		select {
+		case <-ctx.Done():
+			break mainLoop
 
-		heartbeat := time.NewTicker(0)
-		heartbeat.Stop()
+		case msg := <-msgCh:
+			switch msg := msg.(type) {
+			case *ServerInfo:
+				if msg.MessageVersion != Version {
+					slog.ErrorContext(ctx,
+						"server version mismatch, bailing out",
+						"server_version", msg.MessageVersion,
+						"client_version", Version)
 
-		for {
+					loopError = errors.New("buttplug version mismatch between client and server")
+					break mainLoop
+				}
+
+				if msg.MaxPingTime > 0 {
+					hrt := time.Duration(msg.MaxPingTime) * time.Millisecond / 2
+					heartbeat = time.Tick(hrt)
+				}
+
+			case *Log:
+				slog.InfoContext(ctx,
+					"received Log message from server",
+					"level", msg.LogLevel,
+					"message", msg.LogMessage)
+
+			case *Error:
+				slog.ErrorContext(ctx,
+					"received Error message",
+					"id", msg.MessageID(),
+					"code", msg.ErrorCode,
+					"error", msg.ErrorMessage)
+			}
+
+			// reply to any waiting command.
+			if cmd, ok := w.waitingCommands.LoadAndDelete(msg.MessageID()); ok {
+				cmd.reply(msg)
+			}
+
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
-
-			case msg := <-msgCh:
-				switch msg := msg.(type) {
-				case *ServerInfo:
-					if msg.MessageVersion != Version {
-						slog.ErrorContext(ctx,
-							"server version mismatch, bailing out",
-							"server_version", msg.MessageVersion,
-							"client_version", Version)
-
-						// attempt to gracefully close the connection
-						wsConn.Close(websocket.StatusPolicyViolation, "version mismatch")
-
-						return fmt.Errorf(
-							"version mismatch: server has %d, client has %d",
-							msg.MessageVersion, Version,
-						)
-					}
-
-					if msg.MaxPingTime > 0 {
-						hrt := time.Duration(msg.MaxPingTime) * time.Millisecond / 2
-						heartbeat.Reset(hrt)
-					}
-				}
-
-				// reply to any waiting command.
-				if cmd, ok := w.waitingCommands.LoadAndDelete(msg.MessageID()); ok {
-					cmd.reply(msg)
-				}
-
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case w.msgs <- msg:
-					// ok
-				}
-
-			case <-heartbeat.C:
-				// ensure the heartbeat channel has something in it but don't
-				// force it.
-				teaseChannel(heartbeatCh, struct{}{})
+				break mainLoop
+			case w.msgs <- msg:
+				// ok
 			}
-		}
-	})
 
-	return errg.Wait()
+		case t := <-heartbeat:
+			// ensure the heartbeat channel has something in it but don't
+			// force it.
+			teaseChannel(w.beat, t)
+		}
+	}
+
+	// make sure we send out a StopDeviceCmd and close the websocket
+	// gracefully if we can.
+	stopCtx, cancel := context.WithTimeout(wsCtx, 5*time.Second)
+	defer cancel()
+
+	stopEvent := &StopAllDevices{ID: w.nextID()}
+	slog.DebugContext(stopCtx,
+		"sending StopAllDevices command during estop",
+		"msg.id", stopEvent.MessageID())
+
+	if err := wsjson.Write(stopCtx, wsConn, stopEvent); err != nil {
+		slog.WarnContext(stopCtx,
+			"failed to send StopAllDevices command during estop, sorry for the pleasure~",
+			"err", err)
+	}
+
+	slog.DebugContext(stopCtx,
+		"closing websocket gracefully during estop")
+
+	if loopError == nil {
+		err = wsConn.Close(websocket.StatusNormalClosure, "client is stopping")
+	} else {
+		err = wsConn.Close(websocket.StatusGoingAway, "client is stopping due to error")
+	}
+
+	if err != nil {
+		slog.ErrorContext(ctx,
+			"failed to close websocket gracefully during estop",
+			"err", err)
+		return fmt.Errorf("failed to close websocket: %w", err)
+	}
+
+	return ctx.Err()
 }
 
 func (w *Websocket) nextID() ID {
@@ -335,6 +412,12 @@ func (w *Websocket) sendWithReply(ctx context.Context, msg Message, reply func(M
 	case w.send <- cmd:
 		return nil
 	}
+}
+
+// SignalHeartbeat signals the websocket to send a heartbeat ping as soon as
+// possible.
+func (w *Websocket) SignalHeartbeat() {
+	teaseChannel(w.beat, time.Now())
 }
 
 // teaseChannel tries to put a value into a channel without blocking.

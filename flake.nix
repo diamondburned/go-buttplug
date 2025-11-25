@@ -43,7 +43,7 @@
                 intiface-engine
 
                 # development tools
-                go
+                go_latest
                 gopls
               ];
           };

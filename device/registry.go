@@ -3,6 +3,7 @@ package device
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"sync"
 
@@ -13,19 +14,23 @@ import (
 // state. It handles ingesting websocket messages to keep this internal state
 // updated.
 type Registry struct {
-	conn Websocket
-	msgs chan buttplug.Message
+	conn   WebsocketSender
+	msgs   chan buttplug.Message
+	logger *slog.Logger
 
 	mu          sync.RWMutex
+	ready       chan struct{}
 	controllers map[buttplug.DeviceIndex]*Controller
 }
 
 // NewRegistry creates a new device registry that uses the given websocket
 // connection to send commands.
-func NewRegistry(conn Websocket, logger *slog.Logger) *Registry {
+func NewRegistry(conn WebsocketSender, logger *slog.Logger) *Registry {
 	return &Registry{
 		conn:        conn,
 		msgs:        make(chan buttplug.Message, 1),
+		logger:      logger,
+		ready:       make(chan struct{}, 1),
 		controllers: make(map[buttplug.DeviceIndex]*Controller),
 	}
 }
@@ -64,20 +69,36 @@ func (r *Registry) Messages() <-chan buttplug.Message {
 // This function will call [Registry.HandleMessage] for each message received
 // from the websocket. If the caller prefers to handle messages themselves,
 // they'll need to call [Registry.HandleMessage] manually for each message.
-func (r *Registry) Start(ctx context.Context) error {
+func (r *Registry) Start(ctx context.Context, ws WebsocketMessageReceiver) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 
-		case msg := <-r.conn.Messages():
-			r.HandleMessage(ctx, msg)
+		case msg := <-ws.Messages():
+			slog := r.logger.With(
+				"msg.id", msg.MessageID(),
+				"msg.type", msg.MessageType())
+
+			slog.DebugContext(ctx,
+				"buttplug device registry received message")
+
+			if err := r.HandleMessage(ctx, msg); err != nil && !errors.Is(err, context.Canceled) {
+				slog.WarnContext(ctx,
+					"buttplug device registry failed to handle message",
+					"error", err)
+			}
+
+			slog.DebugContext(ctx,
+				"buttplug device registry handled message")
 
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
+
 			case r.msgs <- msg:
-				// ok
+				slog.DebugContext(ctx,
+					"buttplug device registry forwarded message")
 			}
 		}
 	}
@@ -85,13 +106,23 @@ func (r *Registry) Start(ctx context.Context) error {
 
 // HandleMessage handles a message for the registry.
 func (r *Registry) HandleMessage(ctx context.Context, msg buttplug.Message) error {
+	slog := r.logger.With(
+		"msg.id", msg.MessageID(),
+		"msg.type", msg.MessageType())
+
 	switch msg := msg.(type) {
 	case *buttplug.WebsocketReset:
 		r.mu.Lock()
-		defer r.mu.Unlock()
-
 		r.controllers = make(map[buttplug.DeviceIndex]*Controller)
-		return nil
+		r.mu.Unlock()
+
+		slog.DebugContext(ctx,
+			"buttplug device registry reset; starting scan and requesting device list!")
+
+		return errors.Join(
+			r.conn.Send(ctx, &buttplug.StartScanning{}),
+			r.conn.Send(ctx, &buttplug.RequestDeviceList{}),
+		)
 
 	case *buttplug.DeviceAdded:
 		r.mu.Lock()
