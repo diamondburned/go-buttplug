@@ -84,7 +84,7 @@ func run(ctx context.Context) error {
 
 			case msg := <-deviceRegistry.Messages():
 				switch msg.(type) {
-				case *buttplug.WebsocketReset:
+				case *buttplug.WebsocketResetMessage:
 					slog.InfoContext(ctx,
 						"websocket reset received, all state cleared")
 

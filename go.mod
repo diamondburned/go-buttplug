@@ -18,5 +18,11 @@ require github.com/coder/websocket v1.8.14
 
 require (
 	github.com/cenkalti/backoff/v5 v5.0.3
+	github.com/dave/jennifer v1.7.1
+	github.com/davecgh/go-spew v1.1.1
+	github.com/diamondburned/gotk4 v0.3.1
 	github.com/lmittmann/tint v1.1.2
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 )
+
+require golang.org/x/text v0.14.0 // indirect
