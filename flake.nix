@@ -46,6 +46,13 @@
                 go_latest
                 gopls
               ];
+
+            GOEXPERIMENT = lib.concatStringsSep "," [
+              # go-buttplug makes extensive use of encoding/json/v2 for
+              # efficiency. As of Go 1.25, this is feature-gated.
+              # See https://go.dev/doc/go1.25#json_v2.
+              "jsonv2"
+            ];
           };
 
           packages = {
@@ -66,10 +73,9 @@
               ];
 
               buildInputs = with pkgs; [
-                # openssl
                 udev
-                # libusb1
                 dbus
+                libusb1
               ];
 
               meta = {

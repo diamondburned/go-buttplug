@@ -111,7 +111,7 @@ func (r *Registry) HandleMessage(ctx context.Context, msg buttplug.Message) erro
 		"msg.type", msg.MessageType())
 
 	switch msg := msg.(type) {
-	case *buttplug.WebsocketReset:
+	case *buttplug.WebsocketResetMessage:
 		r.mu.Lock()
 		r.controllers = make(map[buttplug.DeviceIndex]*Controller)
 		r.mu.Unlock()
