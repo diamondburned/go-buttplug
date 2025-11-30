@@ -1,16 +1,14 @@
 # go-buttplug
 
-[![builds.sr.ht status](https://builds.sr.ht/~diamondburned/go-buttplug.svg)](https://builds.sr.ht/~diamondburned/go-buttplug?)
-[![Go Reference](https://pkg.go.dev/badge/github.com/diamondburned/go-buttplug.svg)](https://pkg.go.dev/github.com/diamondburned/go-buttplug)
+[![Go Reference](https://pkg.go.dev/badge/libdb.so/go-buttplug.svg)](https://pkg.go.dev/libdb.so/go-buttplug)
 
 A Go library for the [Intiface][intiface] Websocket API, which wraps the
 [buttplug.io protocol][buttplug].
 
-[intiface]: https://github.com/intiface/intiface-cli-rs
+[intiface]: https://github.com/intiface/intiface-central
 [buttplug]: https://buttplug-spec.docs.buttplug.io
 
 ## Example
 
-See [package intiface's example][intiface-doc].
-
-[intiface-doc]: https://pkg.go.dev/github.com/diamondburned/go-buttplug/intiface#example-package
+See [cmd/vibrate-em-all](cmd/vibrate-em-all) for a simple example program that
+vibrates all connected devices.
