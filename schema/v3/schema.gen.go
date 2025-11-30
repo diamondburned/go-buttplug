@@ -8,7 +8,7 @@ import (
 	"encoding/json/v2"
 	"errors"
 	"fmt"
-	"github.com/diamondburned/go-buttplug/schema/ptr"
+	"libdb.so/go-buttplug/schema/ptr"
 	"log/slog"
 )
 

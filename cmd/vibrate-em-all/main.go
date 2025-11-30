@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/diamondburned/go-buttplug"
-	"github.com/diamondburned/go-buttplug/schema/ptr"
-	"github.com/diamondburned/go-buttplug/schema/v3"
+	"libdb.so/go-buttplug"
+	"libdb.so/go-buttplug/schema/ptr"
+	"libdb.so/go-buttplug/schema/v3"
 	"github.com/lmittmann/tint"
 	"golang.org/x/sync/errgroup"
 )

@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	j "github.com/dave/jennifer/jen"
-	"github.com/diamondburned/go-buttplug/cmd/buttplug-generate/jsonschema"
+	"libdb.so/go-buttplug/cmd/buttplug-generate/jsonschema"
 )
 
 type generator struct {
@@ -37,7 +37,7 @@ func (gen *generator) generate(schema *jsonschema.Schema) {
 
 	gen.file.ImportName("encoding/json/v2", "json")
 	gen.file.ImportName("encoding/json/jsontext", "jsontext")
-	gen.file.ImportName("github.com/diamondburned/go-buttplug/schema/ptr", "ptr")
+	gen.file.ImportName("libdb.so/go-buttplug/schema/ptr", "ptr")
 
 	item := schema.Items()[0]
 	gen.generateMessageSpec(item)
@@ -78,7 +78,7 @@ func (gen *generator) generateRawMessage() j.Code {
 }
 
 func (gen *generator) wrapOptional(code j.Code) *j.Statement {
-	return j.Qual("github.com/diamondburned/go-buttplug/schema/ptr", "Optional").Types(code)
+	return j.Qual("libdb.so/go-buttplug/schema/ptr", "Optional").Types(code)
 }
 
 // schemaState is the generation state of a schema.

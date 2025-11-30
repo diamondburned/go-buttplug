@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/alecthomas/assert/v2"
-	buttplugschema "github.com/diamondburned/go-buttplug/schema/v3"
+	buttplugschema "libdb.so/go-buttplug/schema/v3"
 	"github.com/neilotoole/slogt"
 )
 

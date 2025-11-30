@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	j "github.com/dave/jennifer/jen"
-	"github.com/diamondburned/go-buttplug/cmd/buttplug-generate/jsonschema"
+	"libdb.so/go-buttplug/cmd/buttplug-generate/jsonschema"
 )
 
 func (gen *generator) generateSchemaByType(schema *jsonschema.Schema, inline bool) j.Code {

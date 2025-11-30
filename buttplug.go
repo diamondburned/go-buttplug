@@ -20,7 +20,7 @@ import (
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/coder/websocket"
-	buttplugschema "github.com/diamondburned/go-buttplug/schema/v3"
+	buttplugschema "libdb.so/go-buttplug/schema/v3"
 )
 
 //go:generate go run ./cmd/buttplug-generate

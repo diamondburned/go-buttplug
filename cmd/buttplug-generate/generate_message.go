@@ -4,7 +4,7 @@ import (
 	"log/slog"
 
 	j "github.com/dave/jennifer/jen"
-	"github.com/diamondburned/go-buttplug/cmd/buttplug-generate/jsonschema"
+	"libdb.so/go-buttplug/cmd/buttplug-generate/jsonschema"
 	"github.com/diamondburned/gotk4/gir/girgen/strcases"
 )
 

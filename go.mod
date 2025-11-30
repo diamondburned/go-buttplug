@@ -1,4 +1,4 @@
-module github.com/diamondburned/go-buttplug
+module libdb.so/go-buttplug
 
 go 1.25.0
 

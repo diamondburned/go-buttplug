@@ -11,7 +11,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/diamondburned/go-buttplug/schema/ptr"
+	"libdb.so/go-buttplug/schema/ptr"
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 

@@ -5,7 +5,7 @@ import (
 
 	_ "embed"
 
-	"github.com/diamondburned/go-buttplug/internal/buttplugschema/tmplutil"
+	"libdb.so/go-buttplug/internal/buttplugschema/tmplutil"
 )
 
 // Type describes any type.

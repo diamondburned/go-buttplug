@@ -10,7 +10,7 @@ import (
 
 	j "github.com/dave/jennifer/jen"
 	"github.com/davecgh/go-spew/spew"
-	"github.com/diamondburned/go-buttplug/cmd/buttplug-generate/jsonschema"
+	"libdb.so/go-buttplug/cmd/buttplug-generate/jsonschema"
 	"github.com/lmittmann/tint"
 )
 
