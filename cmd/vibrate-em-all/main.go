@@ -216,7 +216,7 @@ func (s *Session) startVibratingAll(ctx context.Context, setLevel float64) {
 		}
 
 		vibrators := filterList(devices, func(d schema.Device) bool {
-			return slices.ContainsFunc(d.DeviceMessages.ScalarCmd, func(s schema.ScalarCmd) bool {
+			return slices.ContainsFunc(d.DeviceMessages.ScalarCmd, func(s schema.ScalarCmdInfo) bool {
 				return ptr.ValueOrZero(s.ActuatorType) == buttplug.ActuatorVibrate
 			})
 		})

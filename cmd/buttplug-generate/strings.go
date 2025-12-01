@@ -15,20 +15,23 @@ func init() {
 	})
 }
 
-var knownSingularOfPlurals = map[string]string{
+var knownBadSuffixes = map[string]string{
 	"Devices":   "Device",
 	"Vectors":   "Vector",
 	"Scalars":   "Scalar",
 	"Rotations": "Rotation",
-	"LinearCmd": "LinearCmd",
-	"RotateCmd": "RotateCmd",
-	"ScalarCmd": "ScalarCmd",
+	// at least for v3, cmds are actually used in server-retured info, while
+	// non-cmd forms are used in actual commands sent to servers. use this to
+	// flip it around.
+	"LinearCmd": "LinearCmdInfo",
+	"RotateCmd": "RotateCmdInfo",
+	"ScalarCmd": "ScalarCmdInfo",
 }
 
-// endsWithKnownPlural checks if the given name ends with a known plural suffix
-// and returns the singular form if so.
-func endsWithKnownPlural(name string) (string, bool) {
-	for plural, singular := range knownSingularOfPlurals {
+// endsWithBadSuffix checks if the given name ends with a known bad suffix, and
+// if so, returns the corrected name and true. Otherwise, it returns false.
+func endsWithBadSuffix(name string) (string, bool) {
+	for plural, singular := range knownBadSuffixes {
 		if strings.HasSuffix(name, plural) {
 			return strings.TrimSuffix(name, plural) + singular, true
 		}

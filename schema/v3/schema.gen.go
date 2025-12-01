@@ -1428,15 +1428,15 @@ type DeviceIndex int
 // DeviceMessages: a list of the messages a device will accept on this server
 // implementation.
 type DeviceMessages struct {
-	LinearCmd []LinearCmd `json:"LinearCmd,omitzero"`
+	LinearCmd []LinearCmdInfo `json:"LinearCmd,omitzero"`
 	// RawReadCmd: attributes for raw device messages.
 	RawReadCmd ptr.Optional[RawMessageAttributes] `json:"RawReadCmd,omitzero"`
 	// RawSubscribeCmd: attributes for raw device messages.
 	RawSubscribeCmd ptr.Optional[RawMessageAttributes] `json:"RawSubscribeCmd,omitzero"`
 	// RawWriteCmd: attributes for raw device messages.
 	RawWriteCmd        ptr.Optional[RawMessageAttributes] `json:"RawWriteCmd,omitzero"`
-	RotateCmd          []RotateCmd                        `json:"RotateCmd,omitzero"`
-	ScalarCmd          []ScalarCmd                        `json:"ScalarCmd,omitzero"`
+	RotateCmd          []RotateCmdInfo                    `json:"RotateCmd,omitzero"`
+	ScalarCmd          []ScalarCmdInfo                    `json:"ScalarCmd,omitzero"`
 	SensorReadCmd      []SensorReadCmdItem                `json:"SensorReadCmd,omitzero"`
 	SensorSubscribeCmd []SensorSubscribeCmdItem           `json:"SensorSubscribeCmd,omitzero"`
 	// StopDeviceCmd: attributes for device message that have no attributes.
@@ -1495,8 +1495,8 @@ type Scalar struct {
 	ActuatorType string `json:"ActuatorType"`
 }
 
-// LinearCmd: attributes for device messages.
-type LinearCmd struct {
+// LinearCmdInfo: attributes for device messages.
+type LinearCmdInfo struct {
 	// ActuatorType: denotes type of actuator (Vibrator, Linear, Oscillator,
 	// etc...).
 	ActuatorType      ptr.Optional[string] `json:"ActuatorType,omitzero"`
@@ -1510,8 +1510,8 @@ type RawMessageAttributes struct {
 	Endpoints []string `json:"Endpoints,omitzero"`
 }
 
-// RotateCmd: attributes for device messages.
-type RotateCmd struct {
+// RotateCmdInfo: attributes for device messages.
+type RotateCmdInfo struct {
 	// ActuatorType: denotes type of actuator (Vibrator, Linear, Oscillator,
 	// etc...).
 	ActuatorType      ptr.Optional[string] `json:"ActuatorType,omitzero"`
@@ -1520,8 +1520,8 @@ type RotateCmd struct {
 	StepCount ptr.Optional[StepCount] `json:"StepCount,omitzero"`
 }
 
-// ScalarCmd: attributes for device messages.
-type ScalarCmd struct {
+// ScalarCmdInfo: attributes for device messages.
+type ScalarCmdInfo struct {
 	// ActuatorType: denotes type of actuator (Vibrator, Linear, Oscillator,
 	// etc...).
 	ActuatorType      ptr.Optional[string] `json:"ActuatorType,omitzero"`

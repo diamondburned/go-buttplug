@@ -4,8 +4,8 @@ import (
 	"log/slog"
 
 	j "github.com/dave/jennifer/jen"
-	"libdb.so/go-buttplug/cmd/buttplug-generate/jsonschema"
 	"github.com/diamondburned/gotk4/gir/girgen/strcases"
+	"libdb.so/go-buttplug/cmd/buttplug-generate/jsonschema"
 )
 
 func (gen *generator) generateMessageSpec(schema *jsonschema.Schema) {

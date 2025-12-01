@@ -93,7 +93,7 @@ func (gen *generator) generateArray(schema *jsonschema.Schema, inline bool) j.Co
 
 	if item.Type().Is(jsonschema.ObjectType) {
 		var itemName string
-		if singularForm, ok := endsWithKnownPlural(schema.Name()); ok {
+		if singularForm, ok := endsWithBadSuffix(schema.Name()); ok {
 			itemName = singularForm
 		} else {
 			itemName = concatStringsNoOverlap(schema.Name(), "Item")
