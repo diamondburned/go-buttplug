@@ -27,6 +27,10 @@ import (
 // implements. See https://docs.buttplug.io/docs/spec/changelog.
 const MessageVersion = 3
 
+// DefaultServerName is the default client name sent to the Buttplug server
+// during handshake.
+const DefaultServerName = "go-buttplug"
+
 // WebsocketResetMessage is an empty message that is sent from the websocket
 // loop to indicate that the connection has been reset and that internal state
 // should be cleared.
@@ -34,20 +38,34 @@ type WebsocketResetMessage struct {
 	buttplugschema.InternalMessage
 }
 
-const (
-	// WebsocketDialTimeout is the maximum duration each dial.
-	WebsocketDialTimeout = 10 * time.Second
-	// WebsocketDialDelay is the delay between dials.
-	WebsocketDialDelay = time.Second
-)
+// DefaultDialTimeout is the maximum duration each dial.
+const DefaultDialTimeout = 10 * time.Second
 
-// WebsocketBackoff is the default backoff policy for reconnecting to a Buttplug
+// DefaultDialBackoff is the default backoff policy for reconnecting to a Buttplug
 // server over websocket.
-var WebsocketBackoff backoff.BackOff = &backoff.ExponentialBackOff{
+var DefaultDialBackoff backoff.BackOff = &backoff.ExponentialBackOff{
 	InitialInterval:     200 * time.Millisecond,
 	RandomizationFactor: 0.5,
 	Multiplier:          1.5,
 	MaxInterval:         2 * time.Second,
+}
+
+// WebsocketOpts contains options for creating a new Buttplug Websocket
+// instance.
+type WebsocketOpts struct {
+	// ServerName is the client name sent to the Buttplug server during
+	// handshake. It is recommended that you change this to the actual name of
+	// the application using the library. If empty, [DefaultServerName] is used.
+	ServerName string
+	// Logger is an optional logger for internal logging.
+	// If empty, [slog.Default] is used.
+	Logger *slog.Logger
+	// DialTimeout is the maximum duration for each dial attempt.
+	// If zero, [WebsocketDialTimeout] is used.
+	DialTimeout time.Duration
+	// DialBackoff is the backoff policy for reconnecting to the Buttplug
+	// server over websocket. If nil, [DefaultDialBackoff] is used.
+	DialBackoff backoff.BackOff
 }
 
 // Websocket describes a websocket connection to the Buttplug server.
@@ -55,10 +73,10 @@ type Websocket struct {
 	send  chan buttplugschema.ClientMessage
 	msgCh atomic.Pointer[messageChannel]
 
-	logger     *slog.Logger
-	id         atomic.Int64
-	addr       string
-	serverName string
+	logger *slog.Logger
+	id     atomic.Int64
+	addr   string
+	opts   WebsocketOpts
 }
 
 type messageChannel struct {
@@ -68,29 +86,32 @@ type messageChannel struct {
 	next atomic.Pointer[messageChannel]
 }
 
-// NewWebsocket creates a new Buttplug Websocket client instance and optionally
-// a [slog.Logger] for internal logging.
-func NewWebsocket(wsAddr string, logger *slog.Logger) *Websocket {
-	return NewWebsocketWithServerName(wsAddr, "go-buttplug", logger)
-}
+// NewWebsocket creates a new Buttplug Websocket client instance with optionally
+// a [WebsocketOpts] to configure it.
+func NewWebsocket(wsAddr string, opts *WebsocketOpts) *Websocket {
+	opts = useWithDefault(opts, &WebsocketOpts{})
+	opts.ServerName = useWithDefault(opts.ServerName, DefaultServerName)
+	opts.Logger = useWithDefault(opts.Logger, slog.Default())
+	opts.DialTimeout = useWithDefault(opts.DialTimeout, DefaultDialTimeout)
+	opts.DialBackoff = useWithDefault(opts.DialBackoff, DefaultDialBackoff)
 
-// NewWebsocketWithServerName creates a new Buttplug Websocket client instance
-// with a custom client name and optionally a [slog.Logger] for internal
-// logging.
-func NewWebsocketWithServerName(wsAddr, serverName string, logger *slog.Logger) *Websocket {
-	if logger == nil {
-		logger = slog.Default()
-	}
-
-	logger = logger.
+	logger := opts.Logger.
 		With("module", "buttplug")
 
 	return &Websocket{
-		send:       make(chan buttplugschema.ClientMessage, 1), // buffered for initial dispatch
-		logger:     logger,
-		addr:       wsAddr,
-		serverName: serverName,
+		send:   make(chan buttplugschema.ClientMessage, 1), // buffered for initial dispatch
+		logger: logger,
+		addr:   wsAddr,
+		opts:   *opts,
 	}
+}
+
+func useWithDefault[T comparable](val, def T) T {
+	var z T
+	if val == z {
+		return def
+	}
+	return val
 }
 
 // messageChannels returns an iterator over all message channels.
@@ -165,7 +186,7 @@ func (w *Websocket) MessageChannel(ctx context.Context) (<-chan buttplugschema.M
 
 // Start starts the websocket connection persistently and blocks until the given
 // context is cancelled. It transparently reconnects on connection or loop
-// failure with a backoff defined by [WebsocketBackoff].
+// failure with a backoff defined by [DefaultDialBackoff].
 func (w *Websocket) Start(ctx context.Context) error {
 	// Ensure all message channels are closed when we exit, and that the
 	// channels are no longer reachable after closing.
@@ -178,7 +199,7 @@ func (w *Websocket) Start(ctx context.Context) error {
 		}
 	}()
 
-	retryTicker := backoff.NewTicker(WebsocketBackoff)
+	retryTicker := backoff.NewTicker(DefaultDialBackoff)
 	defer retryTicker.Stop()
 
 	for attempt := 0; ctx.Err() == nil; attempt++ {
@@ -336,7 +357,7 @@ func (w *Websocket) start(ctx context.Context, slog *slog.Logger) error {
 	// [ServerInfo] back.
 	handshakeMsg := &buttplugschema.RequestServerInfoMessage{
 		ID:             w.nextID(),
-		ClientName:     w.serverName,
+		ClientName:     w.opts.ServerName,
 		MessageVersion: MessageVersion,
 	}
 	select {

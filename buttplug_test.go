@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/alecthomas/assert/v2"
-	buttplugschema "libdb.so/go-buttplug/schema/v3"
 	"github.com/neilotoole/slogt"
+	buttplugschema "libdb.so/go-buttplug/schema/v3"
 )
 
 func TestSchema(t *testing.T) {
@@ -146,7 +146,7 @@ func TestEndToEnd(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			logger := slogt.New(t)
 
-			conn := NewWebsocket(addrEnv, logger)
+			conn := NewWebsocket(addrEnv, &WebsocketOpts{Logger: logger})
 			if tt.dontStart {
 				tt.prog(t, conn, nil)
 			} else {

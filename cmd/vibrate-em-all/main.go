@@ -13,11 +13,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lmittmann/tint"
+	"golang.org/x/sync/errgroup"
 	"libdb.so/go-buttplug"
 	"libdb.so/go-buttplug/schema/ptr"
 	"libdb.so/go-buttplug/schema/v3"
-	"github.com/lmittmann/tint"
-	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -74,7 +74,7 @@ func run(ctx context.Context) error {
 
 	s := &Session{
 		wg: errg,
-		ws: buttplug.NewWebsocket(addr, slog.Default()),
+		ws: buttplug.NewWebsocket(addr, nil),
 	}
 
 	// Start polling all sensors and reporting them periodically:
