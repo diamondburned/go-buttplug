@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"go/doc"
 	"go/doc/comment"
+	"regexp"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/diamondburned/gotk4/gir/girgen/strcases"
 )
@@ -28,7 +31,12 @@ func FormatComment(cmt, prefix string, indentLvl int) string {
 
 	if !strings.HasPrefix(cmt, prefix) && !strings.HasPrefix(cmt, FormatIdentifier(prefix)) {
 		prefix = FormatIdentifier(prefix)
+		cmt = lowerFirstLetter(cmt)
 		cmt = fmt.Sprintf("%s: %s", prefix, cmt)
+	}
+
+	if !strings.Contains(cmt, "\n") && !strings.HasSuffix(cmt, ".") {
+		cmt += "."
 	}
 
 	return WrapComment(cmt, indentLvl)
@@ -68,4 +76,34 @@ func docText(p string, col int) string {
 		TextWidth:      col,
 	}
 	return string(pr.Text(d))
+}
+
+// lowerFirstLetter lower-cases the first letter in the paragraph.
+func lowerFirstLetter(p string) string {
+	if p == "" {
+		return ""
+	}
+
+	r1, r1w := utf8.DecodeRuneInString(p)
+	if unicode.IsLower(r1) {
+		return p
+	}
+	if r1w == len(p) {
+		return strings.ToLower(p)
+	}
+
+	// Edge case: gTK, etc.
+	if r2, _ := utf8.DecodeRuneInString(p[r1w:]); unicode.IsUpper(r2) {
+		return p
+	}
+
+	return strings.ToLower(p[:r1w]) + p[r1w:]
+}
+
+var reVersionSuffix = regexp.MustCompile(`V[0-9]+$`)
+
+// TrimVersion trims a version suffix like "V4" off a string.
+// These suffixes appear throughout object names in the Buttplug schema.
+func TrimVersion(str string) string {
+	return reVersionSuffix.ReplaceAllString(str, "")
 }

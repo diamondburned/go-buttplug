@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/santhosh-tekuri/jsonschema/v6"
-	"libdb.so/go-buttplug/schema/ptr"
 )
 
 // Schema defines a JSON Schema object.
@@ -60,7 +59,8 @@ func (s *Schema) copy() *Schema {
 // Name returns the name of the schema, usually derived from the base name of
 // its location.
 func (s *Schema) Name() string {
-	return FormatIdentifier(s.Location().BaseName())
+	id := TrimVersion(FormatIdentifier(s.Location().BaseName()))
+	return id
 }
 
 // WithName clones the schema to have the given name by changing its location.
@@ -127,9 +127,6 @@ func (s *Schema) IsRef() bool {
 
 // Type returns the type of the schema without dereferencing any references.
 func (s *Schema) Type() SchemaType {
-	if schemaIsByteArray(s) {
-		return ByteArrayType
-	}
 	if s.self.Types == nil {
 		if s.self.Enum != nil {
 			return EnumType
@@ -137,19 +134,6 @@ func (s *Schema) Type() SchemaType {
 		return InvalidType
 	}
 	return SchemaType(*s.self.Types)
-}
-
-func schemaIsByteArray(s *Schema) bool {
-	if s.self.Types == nil || !SchemaType(*s.self.Types).Is(ArrayType) {
-		return false
-	}
-	if len(s.Items()) != 1 {
-		return false
-	}
-	item := s.Items()[0].Unref()
-	return item.Type().Is(IntegerType) &&
-		ptr.ValueOrZero(item.Minimum()) == 0x00 &&
-		ptr.ValueOrZero(item.Maximum()) == 0xFF
 }
 
 // UnderlyingType returns the underlying type of the schema, dereferencing
@@ -381,6 +365,16 @@ func (s *Schema) Maximum() *float64 {
 	return bigratToNum[float64](s.self.Maximum)
 }
 
+// MinItems returns the minItems value of the schema assumed to be an array.
+func (s *Schema) MinItems() *int {
+	return s.self.MinItems
+}
+
+// MaxItems returns the maxItems value of the schema assumed to be an array.
+func (s *Schema) MaxItems() *int {
+	return s.self.MaxItems
+}
+
 // AnyOf returns the anyOf schemas of the schema.
 func (s *Schema) AnyOf() []*Schema {
 	return wrapSchemas(s.self.AnyOf, s)
@@ -482,8 +476,7 @@ const (
 	StringType
 	ArrayType
 	ObjectType
-	EnumType      // not in jsonschema.jsonType
-	ByteArrayType // not in jsonschema.jsonType
+	EnumType // not in jsonschema.jsonType
 )
 
 // Has returns true if t has the given other type.

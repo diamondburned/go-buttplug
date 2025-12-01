@@ -1167,366 +1167,363 @@ func (v *VibrateCmdMessage) LogValue() slog.Value {
 		slog.Any("data", (*raw)(v)))
 }
 
-// BatteryLevelCmdMessage: Requests that a BatteryLevel be retreived.
+// BatteryLevelCmdMessage: requests that a BatteryLevel be retreived.
 type BatteryLevelCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 }
 
-// BatteryLevelReadingMessage: Returns a BatteryLevel read from a device.
+// BatteryLevelReadingMessage: returns a BatteryLevel read from a device.
 type BatteryLevelReadingMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// BatteryLevel: Battery Level
+	// BatteryLevel: battery Level.
 	BatteryLevel float64 `json:"BatteryLevel"`
 }
 
-// DeviceAddedMessage: Notifies client that a device of a certain type has been
+// DeviceAddedMessage: notifies client that a device of a certain type has been
 // added to the server.
 type DeviceAddedMessage struct {
-	// SystemID: Used for non-direct-reply messages that can only be sent from
-	// server to client, using the reserved system message Id of 0.
+	// ID: used for non-direct-reply messages that can only be sent from server
+	// to client, using the reserved system message Id of 0.
 	ID SystemID `json:"Id"`
-	// DeviceName: Name of the device
+	// DeviceName: name of the device.
 	DeviceName DeviceName `json:"DeviceName"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// DeviceMessagesV2: A list of the messages a device will accept on this
+	// DeviceMessages: a list of the messages a device will accept on this
 	// server implementation.
-	DeviceMessages DeviceMessagesV2 `json:"DeviceMessages"`
+	DeviceMessages DeviceMessages `json:"DeviceMessages"`
 }
 
-// DeviceListMessage: List of all available devices known to the system.
+// DeviceListMessage: list of all available devices known to the system.
 type DeviceListMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// Devices: Array of device ids and names.
+	// Devices: array of device ids and names.
 	Devices []DevicesItem `json:"Devices"`
 }
 
-// DeviceRemovedMessage: Notifies client that a device of a certain type has
+// DeviceRemovedMessage: notifies client that a device of a certain type has
 // been removed from the server.
 type DeviceRemovedMessage struct {
-	// SystemID: Used for non-direct-reply messages that can only be sent from
-	// server to client, using the reserved system message Id of 0.
+	// ID: used for non-direct-reply messages that can only be sent from server
+	// to client, using the reserved system message Id of 0.
 	ID SystemID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 }
 
-// ErrorMessage: Signifies the server encountered an error while processing the
+// ErrorMessage: signifies the server encountered an error while processing the
 // message indicated by the id.
 type ErrorMessage struct {
-	// ServerID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID           ServerID `json:"Id"`
 	ErrorMessage string   `json:"ErrorMessage"`
 	ErrorCode    float64  `json:"ErrorCode"`
 }
 
-// LinearCmdMessage: Sends a linear movement command to a device that supports
+// LinearCmdMessage: sends a linear movement command to a device that supports
 // linear movements.
 type LinearCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// Vectors: Device linear movement times (milliseconds) and positions
+	// Vectors: device linear movement times (milliseconds) and positions
 	// (floating point, 0 < x < 1) keyed on linear actuator number, stepping
 	// will be device specific.
 	Vectors []VectorsItem `json:"Vectors"`
 }
 
-// OKMessage: Signifies successful processing of the message indicated by the
+// OKMessage: signifies successful processing of the message indicated by the
 // id.
 type OKMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// PingMessage: Connection keep-alive message.
+// PingMessage: connection keep-alive message.
 type PingMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// RSSILevelCmdMessage: Requests that a RSSI level be retreived.
+// RSSILevelCmdMessage: requests that a RSSI level be retreived.
 type RSSILevelCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 }
 
-// RSSILevelReadingMessage: Returns a BatteryLevel read from a device.
+// RSSILevelReadingMessage: returns a BatteryLevel read from a device.
 type RSSILevelReadingMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// RSSILevel: RSSI Level
+	// RSSILevel: RSSI Level.
 	RSSILevel float64 `json:"RSSILevel"`
 }
 
-// RawReadCmdMessage: Request a raw byte array from a device. Should only be
+// RawReadCmdMessage: request a raw byte array from a device. Should only be
 // used for testing/development.
 type RawReadCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 	// Endpoint (from device config file) from which the data was retrieved.
 	Endpoint string `json:"Endpoint"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// Length: Amount of data to read from device, 0 to exhaust whatever is in
-	// immediate buffer
+	// Length: amount of data to read from device, 0 to exhaust whatever is in
+	// immediate buffer.
 	Length int `json:"Length"`
-	// WaitForData: If true, then wait until Length amount of data is available.
+	// WaitForData: if true, then wait until Length amount of data is available.
 	WaitForData bool `json:"WaitForData"`
 }
 
-// RawReadingMessage: Raw byte array received from a device. Should only be used
+// RawReadingMessage: raw byte array received from a device. Should only be used
 // for testing/development.
 type RawReadingMessage struct {
-	// ServerID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ServerID `json:"Id"`
 	// Endpoint (from device config file) from which the data was retrieved.
 	Endpoint string `json:"Endpoint"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// Data: Raw byte string received from device.
-	Data []byte `json:"Data,format:array"`
+	// Data: raw byte string received from device.
+	Data []int `json:"Data"`
 }
 
-// RawSubscribeCmdMessage: Subscribe to an endpoint on a device to receive raw
+// RawSubscribeCmdMessage: subscribe to an endpoint on a device to receive raw
 // info back.
 type RawSubscribeCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 	// Endpoint (from device config file) from which the data was retrieved.
 	Endpoint string `json:"Endpoint"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 }
 
-// RawUnsubscribeCmdMessage: Unsubscribe to an endpoint on a device.
+// RawUnsubscribeCmdMessage: unsubscribe to an endpoint on a device.
 type RawUnsubscribeCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 	// Endpoint (from device config file) from which the data was retrieved.
 	Endpoint string `json:"Endpoint"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 }
 
-// RawWriteCmdMessage: Sends a raw byte array to a device. Should only be used
+// RawWriteCmdMessage: sends a raw byte array to a device. Should only be used
 // for testing/development.
 type RawWriteCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 	// Endpoint (from device config file) to send command to.
 	Endpoint string `json:"Endpoint"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// Data: Raw byte string to send to device.
-	Data []byte `json:"Data,format:array"`
-	// WriteWithResponse: If true, BLE writes will use WriteWithResponse.
+	// Data: raw byte string to send to device.
+	Data []int `json:"Data"`
+	// WriteWithResponse: if true, BLE writes will use WriteWithResponse.
 	// Value ignored for all other types.
 	WriteWithResponse bool `json:"WriteWithResponse"`
 }
 
-// RequestDeviceListMessage: Request for the server to send a list of devices to
+// RequestDeviceListMessage: request for the server to send a list of devices to
 // the client.
 type RequestDeviceListMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// RequestLogMessage: Request for server to stream log messages of a certain
+// RequestLogMessage: request for server to stream log messages of a certain
 // level to client.
 type RequestLogMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// LogLevel: Maximum level of log message to receive.
+	// LogLevel: maximum level of log message to receive.
 	LogLevel RequestLogLevel `json:"LogLevel"`
 }
 
-// RequestServerInfoMessage: Request server version, and relay client name.
+// RequestServerInfoMessage: request server version, and relay client name.
 type RequestServerInfoMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// ClientName: Name of the client software.
+	// ClientName: name of the client software.
 	ClientName string `json:"ClientName"`
-	// MessageVersion: Message template version of the client software.
+	// MessageVersion: message template version of the client software.
 	MessageVersion int `json:"MessageVersion"`
 }
 
-// RotateCmdMessage: Sends a rotate command to a device that supports rotation.
+// RotateCmdMessage: sends a rotate command to a device that supports rotation.
 type RotateCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// Rotations: Device rotation speeds (floating point, 0 < x < 1) keyed on
+	// Rotations: device rotation speeds (floating point, 0 < x < 1) keyed on
 	// rotator number, stepping will be device specific.
 	Rotations []RotationsItem `json:"Rotations"`
 }
 
-// ScanningFinishedMessage: Server notification to client that scanning has
+// ScanningFinishedMessage: server notification to client that scanning has
 // ended.
 type ScanningFinishedMessage struct {
-	// SystemID: Used for non-direct-reply messages that can only be sent from
-	// server to client, using the reserved system message Id of 0.
+	// ID: used for non-direct-reply messages that can only be sent from server
+	// to client, using the reserved system message Id of 0.
 	ID SystemID `json:"Id"`
 }
 
-// ServerInfoMessage: Server version information, in Major.Minor.Build format.
+// ServerInfoMessage: server version information, in Major.Minor.Build format.
 type ServerInfoMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// MessageVersion: Message template version of the server software.
+	// MessageVersion: message template version of the server software.
 	MessageVersion int `json:"MessageVersion"`
-	// MaxPingTime: Maximum time (in milliseconds) the server will wait between
+	// MaxPingTime: maximum time (in milliseconds) the server will wait between
 	// ping messages from client before shutting down.
 	MaxPingTime int `json:"MaxPingTime"`
-	// ServerName: Name of the server. Can be 0-length.
+	// ServerName: name of the server. Can be 0-length.
 	ServerName string `json:"ServerName"`
 }
 
-// StartScanningMessage: Request for the server to start scanning for new
+// StartScanningMessage: request for the server to start scanning for new
 // devices.
 type StartScanningMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// StopAllDevicesMessage: Stops all actions currently being taken by all
+// StopAllDevicesMessage: stops all actions currently being taken by all
 // connected devices.
 type StopAllDevicesMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// StopDeviceCmdMessage: Stops the all actions currently being taken by a
+// StopDeviceCmdMessage: stops the all actions currently being taken by a
 // device.
 type StopDeviceCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 }
 
-// StopScanningMessage: Request for the server to stop scanning for new devices.
+// StopScanningMessage: request for the server to stop scanning for new devices.
 type StopScanningMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// VibrateCmdMessage: Sends a vibrate command to a device that supports
+// VibrateCmdMessage: sends a vibrate command to a device that supports
 // vibration.
 type VibrateCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// Speeds: Device vibration speeds (floating point, 0 < x < 1) keyed on
+	// Speeds: device vibration speeds (floating point, 0 < x < 1) keyed on
 	// vibrator number, stepping will be device specific.
 	Speeds []SpeedsItem `json:"Speeds"`
 }
 
-// ClientID: User-set id for the message. 0 denotes system message and is
+// ClientID: user-set id for the message. 0 denotes system message and is
 // reserved.
 type ClientID int
 
-// DeviceIndex: Index used for referencing the device in device messages.
+// DeviceIndex: index used for referencing the device in device messages.
 type DeviceIndex int
 
-// SystemID: Used for non-direct-reply messages that can only be sent from
+// SystemID: used for non-direct-reply messages that can only be sent from
 // server to client, using the reserved system message Id of 0.
 type SystemID int
 
-// DeviceName: Name of the device
+// DeviceName: name of the device.
 type DeviceName string
 
-// DeviceMessagesV2: A list of the messages a device will accept on this server
+// DeviceMessages: a list of the messages a device will accept on this server
 // implementation.
-type DeviceMessagesV2 struct {
-	// NullMessageAttributes: Attributes for device message that have no
-	// attributes.
+type DeviceMessages struct {
+	// BatteryLevelCmd: attributes for device message that have no attributes.
 	BatteryLevelCmd ptr.Optional[NullMessageAttributes] `json:"BatteryLevelCmd,omitzero"`
-	// GenericMessageAttributesV2: Attributes for device messages.
-	LinearCmd ptr.Optional[GenericMessageAttributesV2] `json:"LinearCmd,omitzero"`
-	// NullMessageAttributes: Attributes for device message that have no
-	// attributes.
+	// LinearCmd: attributes for device messages.
+	LinearCmd ptr.Optional[GenericMessageAttributes] `json:"LinearCmd,omitzero"`
+	// RSSILevelCmd: attributes for device message that have no attributes.
 	RSSILevelCmd ptr.Optional[NullMessageAttributes] `json:"RSSILevelCmd,omitzero"`
-	// RawMessageAttributes: Attributes for raw device messages.
+	// RawReadCmd: attributes for raw device messages.
 	RawReadCmd ptr.Optional[RawMessageAttributes] `json:"RawReadCmd,omitzero"`
-	// RawMessageAttributes: Attributes for raw device messages.
+	// RawSubscribeCmd: attributes for raw device messages.
 	RawSubscribeCmd ptr.Optional[RawMessageAttributes] `json:"RawSubscribeCmd,omitzero"`
-	// RawMessageAttributes: Attributes for raw device messages.
+	// RawUnsubscribeCmd: attributes for raw device messages.
 	RawUnsubscribeCmd ptr.Optional[RawMessageAttributes] `json:"RawUnsubscribeCmd,omitzero"`
-	// RawMessageAttributes: Attributes for raw device messages.
+	// RawWriteCmd: attributes for raw device messages.
 	RawWriteCmd ptr.Optional[RawMessageAttributes] `json:"RawWriteCmd,omitzero"`
-	// GenericMessageAttributesV2: Attributes for device messages.
-	RotateCmd ptr.Optional[GenericMessageAttributesV2] `json:"RotateCmd,omitzero"`
-	// NullMessageAttributes: Attributes for device message that have no
-	// attributes.
+	// RotateCmd: attributes for device messages.
+	RotateCmd ptr.Optional[GenericMessageAttributes] `json:"RotateCmd,omitzero"`
+	// StopDeviceCmd: attributes for device message that have no attributes.
 	StopDeviceCmd ptr.Optional[NullMessageAttributes] `json:"StopDeviceCmd,omitzero"`
-	// GenericMessageAttributesV2: Attributes for device messages.
-	VibrateCmd ptr.Optional[GenericMessageAttributesV2] `json:"VibrateCmd,omitzero"`
+	// VibrateCmd: attributes for device messages.
+	VibrateCmd ptr.Optional[GenericMessageAttributes] `json:"VibrateCmd,omitzero"`
 }
 
 type DevicesItem struct {
-	// DeviceName: Name of the device
+	// DeviceName: name of the device.
 	DeviceName DeviceName `json:"DeviceName"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// DeviceMessagesV2: A list of the messages a device will accept on this
+	// DeviceMessages: a list of the messages a device will accept on this
 	// server implementation.
-	DeviceMessages DeviceMessagesV2 `json:"DeviceMessages"`
+	DeviceMessages DeviceMessages `json:"DeviceMessages"`
 }
 
-// ServerID: User-set id for the message. 0 denotes system message and is
+// ServerID: user-set id for the message. 0 denotes system message and is
 // reserved.
 type ServerID int
 
 type VectorsItem struct {
-	// Index: Linear actuator number.
+	// Index: linear actuator number.
 	Index int `json:"Index"`
-	// Duration: Linear movement time in milliseconds.
+	// Duration: linear movement time in milliseconds.
 	Duration float64 `json:"Duration"`
-	// Position: Linear movement position (floating point, 0 < x < 1), stepping
+	// Position: linear movement position (floating point, 0 < x < 1), stepping
 	// will be device specific.
 	Position float64 `json:"Position"`
 }
 
-// LogLevel: Maximum level of log message to receive.
+// LogLevel: maximum level of log message to receive.
 type RequestLogLevel string
 
 // Enumeration values for [RequestLogLevel] of [RequestLog].
@@ -1541,42 +1538,42 @@ const (
 )
 
 type RotationsItem struct {
-	// Index: Rotator number.
+	// Index: rotator number.
 	Index int `json:"Index"`
-	// Speed: Rotation speed (floating point, 0 < x < 1), stepping will be
+	// Speed: rotation speed (floating point, 0 < x < 1), stepping will be
 	// device specific.
 	Speed float64 `json:"Speed"`
-	// Clockwise: Rotation direction (boolean). Not all devices have a concept
+	// Clockwise: rotation direction (boolean). Not all devices have a concept
 	// of actual clockwise.
 	Clockwise bool `json:"Clockwise"`
 }
 
 type SpeedsItem struct {
-	// Index: Vibrator number.
+	// Index: vibrator number.
 	Index int `json:"Index"`
-	// Speed: Vibration speed (floating point, 0 < x < 1), stepping will be
+	// Speed: vibration speed (floating point, 0 < x < 1), stepping will be
 	// device specific.
 	Speed float64 `json:"Speed"`
 }
 
-// NullMessageAttributes: Attributes for device message that have no attributes.
+// NullMessageAttributes: attributes for device message that have no attributes.
 type NullMessageAttributes struct{}
 
-// GenericMessageAttributesV2: Attributes for device messages.
-type GenericMessageAttributesV2 struct {
-	// FeatureCount: Number of features on device.
+// GenericMessageAttributes: attributes for device messages.
+type GenericMessageAttributes struct {
+	// FeatureCount: number of features on device.
 	FeatureCount ptr.Optional[FeatureCount] `json:"FeatureCount,omitzero"`
-	// StepCountV2: Specifies granularity of each feature on the device.
-	StepCount StepCountV2 `json:"StepCount,omitzero"`
+	// StepCount: specifies granularity of each feature on the device.
+	StepCount StepCount `json:"StepCount,omitzero"`
 }
 
-// RawMessageAttributes: Attributes for raw device messages.
+// RawMessageAttributes: attributes for raw device messages.
 type RawMessageAttributes struct {
 	Endpoints []string `json:"Endpoints,omitzero"`
 }
 
-// FeatureCount: Number of features on device.
+// FeatureCount: number of features on device.
 type FeatureCount int
 
-// StepCountV2: Specifies granularity of each feature on the device.
-type StepCountV2 []int
+// StepCount: specifies granularity of each feature on the device.
+type StepCount []int

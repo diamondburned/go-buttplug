@@ -983,57 +983,57 @@ func (v *VorzeA10CycloneCmdMessage) LogValue() slog.Value {
 		slog.Any("data", (*raw)(v)))
 }
 
-// DeviceAddedMessage: Notifies client that a device of a certain type has been
+// DeviceAddedMessage: notifies client that a device of a certain type has been
 // added to the server.
 type DeviceAddedMessage struct {
-	// SystemID: Used for non-direct-reply messages that can only be sent from
-	// server to client, using the reserved system message Id of 0.
+	// ID: used for non-direct-reply messages that can only be sent from server
+	// to client, using the reserved system message Id of 0.
 	ID SystemID `json:"Id"`
-	// DeviceName: Name of the device
+	// DeviceName: name of the device.
 	DeviceName DeviceName `json:"DeviceName"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// DeviceMessagesV1: A list of the messages a device will accept on this
+	// DeviceMessages: a list of the messages a device will accept on this
 	// server implementation.
-	DeviceMessages DeviceMessagesV1 `json:"DeviceMessages"`
+	DeviceMessages DeviceMessages `json:"DeviceMessages"`
 }
 
-// DeviceListMessage: List of all available devices known to the system.
+// DeviceListMessage: list of all available devices known to the system.
 type DeviceListMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// Devices: Array of device ids and names.
+	// Devices: array of device ids and names.
 	Devices []DevicesItem `json:"Devices"`
 }
 
-// DeviceRemovedMessage: Notifies client that a device of a certain type has
+// DeviceRemovedMessage: notifies client that a device of a certain type has
 // been removed from the server.
 type DeviceRemovedMessage struct {
-	// SystemID: Used for non-direct-reply messages that can only be sent from
-	// server to client, using the reserved system message Id of 0.
+	// ID: used for non-direct-reply messages that can only be sent from server
+	// to client, using the reserved system message Id of 0.
 	ID SystemID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 }
 
-// ErrorMessage: Signifies the server encountered an error while processing the
+// ErrorMessage: signifies the server encountered an error while processing the
 // message indicated by the id.
 type ErrorMessage struct {
-	// ServerID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID           ServerID `json:"Id"`
 	ErrorMessage string   `json:"ErrorMessage"`
 	ErrorCode    float64  `json:"ErrorCode"`
 }
 
-// FleshlightLaunchFW12CmdMessage: Sends speed and position command to the
+// FleshlightLaunchFW12CmdMessage: sends speed and position command to the
 // Fleshlight Launch Device denoted by the device index.
 type FleshlightLaunchFW12CmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 	// Speed at which to move to designated position.
 	Speed int `json:"Speed"`
@@ -1041,259 +1041,256 @@ type FleshlightLaunchFW12CmdMessage struct {
 	Position int `json:"Position"`
 }
 
-// KiirooCmdMessage: Sends a raw byte string to a Kiiroo Onyx/Pearl device.
+// KiirooCmdMessage: sends a raw byte string to a Kiiroo Onyx/Pearl device.
 type KiirooCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 	// Command to send to Kiiroo device.
 	Command string `json:"Command"`
 }
 
-// LinearCmdMessage: Sends a linear movement command to a device that supports
+// LinearCmdMessage: sends a linear movement command to a device that supports
 // linear movements.
 type LinearCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// Vectors: Device linear movement times (milliseconds) and positions
+	// Vectors: device linear movement times (milliseconds) and positions
 	// (floating point, 0 < x < 1) keyed on linear actuator number, stepping
 	// will be device specific.
 	Vectors []VectorsItem `json:"Vectors"`
 }
 
-// LogMessage: Log message from the server.
+// LogMessage: log message from the server.
 type LogMessage struct {
-	// SystemID: Used for non-direct-reply messages that can only be sent from
-	// server to client, using the reserved system message Id of 0.
+	// ID: used for non-direct-reply messages that can only be sent from server
+	// to client, using the reserved system message Id of 0.
 	ID SystemID `json:"Id"`
-	// LogLevel: Log level of message.
+	// LogLevel: log level of message.
 	LogLevel LogLevel `json:"LogLevel"`
-	// LogMessage: Log message from server.
+	// LogMessage: log message from server.
 	LogMessage string `json:"LogMessage"`
 }
 
-// OKMessage: Signifies successful processing of the message indicated by the
+// OKMessage: signifies successful processing of the message indicated by the
 // id.
 type OKMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// PingMessage: Connection keep-alive message.
+// PingMessage: connection keep-alive message.
 type PingMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// RequestDeviceListMessage: Request for the server to send a list of devices to
+// RequestDeviceListMessage: request for the server to send a list of devices to
 // the client.
 type RequestDeviceListMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// RequestLogMessage: Request for server to stream log messages of a certain
+// RequestLogMessage: request for server to stream log messages of a certain
 // level to client.
 type RequestLogMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// LogLevel: Maximum level of log message to receive.
+	// LogLevel: maximum level of log message to receive.
 	LogLevel RequestLogLevel `json:"LogLevel"`
 }
 
-// RequestServerInfoMessage: Request server version, and relay client name.
+// RequestServerInfoMessage: request server version, and relay client name.
 type RequestServerInfoMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// ClientName: Name of the client software.
+	// ClientName: name of the client software.
 	ClientName string `json:"ClientName"`
-	// MessageVersion: Message template version of the client software.
+	// MessageVersion: message template version of the client software.
 	MessageVersion int `json:"MessageVersion"`
 }
 
-// RotateCmdMessage: Sends a rotate command to a device that supports rotation.
+// RotateCmdMessage: sends a rotate command to a device that supports rotation.
 type RotateCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// Rotations: Device rotation speeds (floating point, 0 < x < 1) keyed on
+	// Rotations: device rotation speeds (floating point, 0 < x < 1) keyed on
 	// rotator number, stepping will be device specific.
 	Rotations []RotationsItem `json:"Rotations"`
 }
 
-// ServerInfoMessage: Server version information, in Major.Minor.Build format.
+// ServerInfoMessage: server version information, in Major.Minor.Build format.
 type ServerInfoMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// MessageVersion: Message template version of the server software.
+	// MessageVersion: message template version of the server software.
 	MessageVersion int `json:"MessageVersion"`
-	// MaxPingTime: Maximum time (in milliseconds) the server will wait between
+	// MaxPingTime: maximum time (in milliseconds) the server will wait between
 	// ping messages from client before shutting down.
 	MaxPingTime int `json:"MaxPingTime"`
-	// MajorVersion: Major version of server.
+	// MajorVersion: major version of server.
 	MajorVersion int `json:"MajorVersion"`
-	// MinorVersion: Minor version of server.
+	// MinorVersion: minor version of server.
 	MinorVersion int `json:"MinorVersion"`
-	// BuildVersion: Build version of server.
+	// BuildVersion: build version of server.
 	BuildVersion int `json:"BuildVersion"`
-	// ServerName: Name of the server. Can be 0-length.
+	// ServerName: name of the server. Can be 0-length.
 	ServerName string `json:"ServerName"`
 }
 
-// StartScanningMessage: Request for the server to start scanning for new
+// StartScanningMessage: request for the server to start scanning for new
 // devices.
 type StartScanningMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// StopAllDevicesMessage: Stops all actions currently being taken by all
+// StopAllDevicesMessage: stops all actions currently being taken by all
 // connected devices.
 type StopAllDevicesMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// StopDeviceCmdMessage: Stops the all actions currently being taken by a
+// StopDeviceCmdMessage: stops the all actions currently being taken by a
 // device.
 type StopDeviceCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 }
 
-// StopScanningMessage: Request for the server to stop scanning for new devices.
+// StopScanningMessage: request for the server to stop scanning for new devices.
 type StopScanningMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// TestMessage: Used for connection/application testing. Causes server to echo
+// TestMessage: used for connection/application testing. Causes server to echo
 // back the string sent. Sending string of 'Error' will result in a server
-// error.
+// error. .
 type TestMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// TestString: String to be echo'd back from server. Setting this to 'Error'
+	// TestString: string to be echo'd back from server. Setting this to 'Error'
 	// will cause an error to be thrown.
 	TestString string `json:"TestString"`
 }
 
-// VibrateCmdMessage: Sends a vibrate command to a device that supports
+// VibrateCmdMessage: sends a vibrate command to a device that supports
 // vibration.
 type VibrateCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// Speeds: Device vibration speeds (floating point, 0 < x < 1) keyed on
+	// Speeds: device vibration speeds (floating point, 0 < x < 1) keyed on
 	// vibrator number, stepping will be device specific.
 	Speeds []SpeedsItem `json:"Speeds"`
 }
 
-// VorzeA10CycloneCmdMessage: Sends a raw byte string to a Kiiroo Onyx/Pearl
+// VorzeA10CycloneCmdMessage: sends a raw byte string to a Kiiroo Onyx/Pearl
 // device.
 type VorzeA10CycloneCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// Speed: Rotation speed command for the Cyclone.
+	// Speed: rotation speed command for the Cyclone.
 	Speed int `json:"Speed"`
-	// Clockwise: True for clockwise rotation (in relation to device facing
-	// user), false for Counter-clockwise
+	// Clockwise: true for clockwise rotation (in relation to device facing
+	// user), false for Counter-clockwise.
 	Clockwise bool `json:"Clockwise"`
 }
 
-// SystemID: Used for non-direct-reply messages that can only be sent from
+// SystemID: used for non-direct-reply messages that can only be sent from
 // server to client, using the reserved system message Id of 0.
 type SystemID int
 
-// DeviceName: Name of the device
+// DeviceName: name of the device.
 type DeviceName string
 
-// DeviceIndex: Index used for referencing the device in device messages.
+// DeviceIndex: index used for referencing the device in device messages.
 type DeviceIndex int
 
-// DeviceMessagesV1: A list of the messages a device will accept on this server
+// DeviceMessages: a list of the messages a device will accept on this server
 // implementation.
-type DeviceMessagesV1 struct {
-	// NullMessageAttributes: Attributes for device message that have no
+type DeviceMessages struct {
+	// FleshlightLaunchFW12Cmd: attributes for device message that have no
 	// attributes.
 	FleshlightLaunchFW12Cmd ptr.Optional[NullMessageAttributes] `json:"FleshlightLaunchFW12Cmd,omitzero"`
-	// NullMessageAttributes: Attributes for device message that have no
-	// attributes.
+	// KiirooCmd: attributes for device message that have no attributes.
 	KiirooCmd ptr.Optional[NullMessageAttributes] `json:"KiirooCmd,omitzero"`
-	// GenericMessageAttributesV1: Attributes for device messages.
-	LinearCmd ptr.Optional[GenericMessageAttributesV1] `json:"LinearCmd,omitzero"`
-	// NullMessageAttributes: Attributes for device message that have no
-	// attributes.
+	// LinearCmd: attributes for device messages.
+	LinearCmd ptr.Optional[GenericMessageAttributes] `json:"LinearCmd,omitzero"`
+	// LovenseCmd: attributes for device message that have no attributes.
 	LovenseCmd ptr.Optional[NullMessageAttributes] `json:"LovenseCmd,omitzero"`
-	// GenericMessageAttributesV1: Attributes for device messages.
-	RotateCmd ptr.Optional[GenericMessageAttributesV1] `json:"RotateCmd,omitzero"`
-	// NullMessageAttributes: Attributes for device message that have no
+	// RotateCmd: attributes for device messages.
+	RotateCmd ptr.Optional[GenericMessageAttributes] `json:"RotateCmd,omitzero"`
+	// SingleMotorVibrateCmd: attributes for device message that have no
 	// attributes.
 	SingleMotorVibrateCmd ptr.Optional[NullMessageAttributes] `json:"SingleMotorVibrateCmd,omitzero"`
-	// NullMessageAttributes: Attributes for device message that have no
-	// attributes.
+	// StopDeviceCmd: attributes for device message that have no attributes.
 	StopDeviceCmd ptr.Optional[NullMessageAttributes] `json:"StopDeviceCmd,omitzero"`
-	// GenericMessageAttributesV1: Attributes for device messages.
-	VibrateCmd ptr.Optional[GenericMessageAttributesV1] `json:"VibrateCmd,omitzero"`
-	// NullMessageAttributes: Attributes for device message that have no
+	// VibrateCmd: attributes for device messages.
+	VibrateCmd ptr.Optional[GenericMessageAttributes] `json:"VibrateCmd,omitzero"`
+	// VorzeA10CycloneCmd: attributes for device message that have no
 	// attributes.
 	VorzeA10CycloneCmd ptr.Optional[NullMessageAttributes] `json:"VorzeA10CycloneCmd,omitzero"`
 }
 
-// ClientID: User-set id for the message. 0 denotes system message and is
+// ClientID: user-set id for the message. 0 denotes system message and is
 // reserved.
 type ClientID int
 
 type DevicesItem struct {
-	// DeviceName: Name of the device
+	// DeviceName: name of the device.
 	DeviceName DeviceName `json:"DeviceName"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// DeviceMessagesV1: A list of the messages a device will accept on this
+	// DeviceMessages: a list of the messages a device will accept on this
 	// server implementation.
-	DeviceMessages DeviceMessagesV1 `json:"DeviceMessages"`
+	DeviceMessages DeviceMessages `json:"DeviceMessages"`
 }
 
-// ServerID: User-set id for the message. 0 denotes system message and is
+// ServerID: user-set id for the message. 0 denotes system message and is
 // reserved.
 type ServerID int
 
 type VectorsItem struct {
-	// Index: Linear actuator number.
+	// Index: linear actuator number.
 	Index int `json:"Index"`
-	// Duration: Linear movement time in milliseconds.
+	// Duration: linear movement time in milliseconds.
 	Duration float64 `json:"Duration"`
-	// Position: Linear movement position (floating point, 0 < x < 1), stepping
+	// Position: linear movement position (floating point, 0 < x < 1), stepping
 	// will be device specific.
 	Position float64 `json:"Position"`
 }
 
-// LogLevel: Log level of message.
+// LogLevel: log level of message.
 type LogLevel string
 
 // Enumeration values for [LogLevel] of [Log].
@@ -1307,7 +1304,7 @@ const (
 	LogLevelTrace LogLevel = "Trace"
 )
 
-// LogLevel: Maximum level of log message to receive.
+// LogLevel: maximum level of log message to receive.
 type RequestLogLevel string
 
 // Enumeration values for [RequestLogLevel] of [RequestLog].
@@ -1322,32 +1319,32 @@ const (
 )
 
 type RotationsItem struct {
-	// Index: Rotator number.
+	// Index: rotator number.
 	Index int `json:"Index"`
-	// Speed: Rotation speed (floating point, 0 < x < 1), stepping will be
+	// Speed: rotation speed (floating point, 0 < x < 1), stepping will be
 	// device specific.
 	Speed float64 `json:"Speed"`
-	// Clockwise: Rotation direction (boolean). Not all devices have a concept
+	// Clockwise: rotation direction (boolean). Not all devices have a concept
 	// of actual clockwise.
 	Clockwise bool `json:"Clockwise"`
 }
 
 type SpeedsItem struct {
-	// Index: Vibrator number.
+	// Index: vibrator number.
 	Index int `json:"Index"`
-	// Speed: Vibration speed (floating point, 0 < x < 1), stepping will be
+	// Speed: vibration speed (floating point, 0 < x < 1), stepping will be
 	// device specific.
 	Speed float64 `json:"Speed"`
 }
 
-// NullMessageAttributes: Attributes for device message that have no attributes.
+// NullMessageAttributes: attributes for device message that have no attributes.
 type NullMessageAttributes struct{}
 
-// GenericMessageAttributesV1: Attributes for device messages.
-type GenericMessageAttributesV1 struct {
-	// FeatureCount: Number of features on device.
+// GenericMessageAttributes: attributes for device messages.
+type GenericMessageAttributes struct {
+	// FeatureCount: number of features on device.
 	FeatureCount ptr.Optional[FeatureCount] `json:"FeatureCount,omitzero"`
 }
 
-// FeatureCount: Number of features on device.
+// FeatureCount: number of features on device.
 type FeatureCount int

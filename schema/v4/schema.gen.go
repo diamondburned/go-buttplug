@@ -718,182 +718,182 @@ func (s *StopScanningMessage) LogValue() slog.Value {
 		slog.Any("data", (*raw)(s)))
 }
 
-// DeviceListMessage: List of all available devices known to the system.
+// DeviceListMessage: list of all available devices known to the system.
 type DeviceListMessage struct {
-	// ServerID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ServerID `json:"Id"`
-	// Devices: Array of device ids and names.
+	// Devices: array of device ids and names.
 	Devices DeviceListMessageDevices `json:"Devices"`
 }
 
-// ErrorMessage: Signifies the server encountered an error while processing the
+// ErrorMessage: signifies the server encountered an error while processing the
 // message indicated by the id.
 type ErrorMessage struct {
-	// ServerID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID           ServerID `json:"Id"`
 	ErrorMessage string   `json:"ErrorMessage"`
 	ErrorCode    float64  `json:"ErrorCode"`
 }
 
-// InputCmdMessage: Sends a request to read a sensor value.
+// InputCmdMessage: sends a request to read a sensor value.
 type InputCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex  DeviceIndex `json:"DeviceIndex"`
 	FeatureIndex int         `json:"FeatureIndex"`
 	InputType    string      `json:"InputType"`
 	InputCommand string      `json:"InputCommand"`
 }
 
-// InputReadingMessage: Returns from either a sensor read request or a
+// InputReadingMessage: returns from either a sensor read request or a
 // subscribed sensor event.
 type InputReadingMessage struct {
-	// ServerID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ServerID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex  DeviceIndex             `json:"DeviceIndex"`
 	FeatureIndex int                     `json:"FeatureIndex"`
 	Data         InputReadingMessageData `json:"Data"`
 }
 
-// OKMessage: Signifies successful processing of the message indicated by the
+// OKMessage: signifies successful processing of the message indicated by the
 // id.
 type OKMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// OutputCmdMessage: Sends a generic value set command to a device.
+// OutputCmdMessage: sends a generic value set command to a device.
 type OutputCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// FeatureIndex: index used for referencing the device in device messages.
 	FeatureIndex DeviceIndex   `json:"FeatureIndex"`
 	Command      OutputCommand `json:"Command"`
 }
 
-// PingMessage: Connection keep-alive message.
+// PingMessage: connection keep-alive message.
 type PingMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// RequestDeviceListMessage: Request for the server to send a list of devices to
+// RequestDeviceListMessage: request for the server to send a list of devices to
 // the client.
 type RequestDeviceListMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// RequestServerInfoMessage: Request server version, and relay client name.
+// RequestServerInfoMessage: request server version, and relay client name.
 type RequestServerInfoMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// ClientName: Name of the client software.
+	// ClientName: name of the client software.
 	ClientName string `json:"ClientName"`
-	// ProtocolVersionMajor: Message template version of the server software.
+	// ProtocolVersionMajor: message template version of the server software.
 	ProtocolVersionMajor int `json:"ProtocolVersionMajor"`
-	// ProtocolVersionMinor: Message template version of the server software.
+	// ProtocolVersionMinor: message template version of the server software.
 	ProtocolVersionMinor int `json:"ProtocolVersionMinor"`
 }
 
-// ScanningFinishedMessage: Server notification to client that scanning has
+// ScanningFinishedMessage: server notification to client that scanning has
 // ended.
 type ScanningFinishedMessage struct {
-	// SystemID: Used for non-direct-reply messages that can only be sent from
-	// server to client, using the reserved system message Id of 0.
+	// ID: used for non-direct-reply messages that can only be sent from server
+	// to client, using the reserved system message Id of 0.
 	ID SystemID `json:"Id"`
 }
 
-// ServerInfoMessage: Server version information, with API version in
+// ServerInfoMessage: server version information, with API version in
 // Major.Minor format.
 type ServerInfoMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ptr.Optional[ClientID] `json:"Id,omitzero"`
-	// MaxPingTime: Maximum time (in milliseconds) the server will wait between
+	// MaxPingTime: maximum time (in milliseconds) the server will wait between
 	// ping messages from client before shutting down.
 	MaxPingTime ptr.Optional[int] `json:"MaxPingTime,omitzero"`
-	// ProtocolVersionMajor: Message template version of the server software.
+	// ProtocolVersionMajor: message template version of the server software.
 	ProtocolVersionMajor ptr.Optional[int] `json:"ProtocolVersionMajor,omitzero"`
-	// ProtocolVersionMinor: Message template version of the server software.
+	// ProtocolVersionMinor: message template version of the server software.
 	ProtocolVersionMinor ptr.Optional[int] `json:"ProtocolVersionMinor,omitzero"`
-	// ServerName: Name of the server. Can be 0-length.
+	// ServerName: name of the server. Can be 0-length.
 	ServerName ptr.Optional[string] `json:"ServerName,omitzero"`
 }
 
-// StartScanningMessage: Request for the server to start scanning for new
+// StartScanningMessage: request for the server to start scanning for new
 // devices.
 type StartScanningMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// StopAllDevicesMessage: Stops all actions currently being taken by all
+// StopAllDevicesMessage: stops all actions currently being taken by all
 // connected devices.
 type StopAllDevicesMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// StopDeviceCmdMessage: Stops the all actions currently being taken by a
+// StopDeviceCmdMessage: stops the all actions currently being taken by a
 // device.
 type StopDeviceCmdMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 }
 
-// StopScanningMessage: Request for the server to stop scanning for new devices.
+// StopScanningMessage: request for the server to stop scanning for new devices.
 type StopScanningMessage struct {
-	// ClientID: User-set id for the message. 0 denotes system message and is
+	// ID: user-set id for the message. 0 denotes system message and is
 	// reserved.
 	ID ClientID `json:"Id"`
 }
 
-// ServerID: User-set id for the message. 0 denotes system message and is
+// ServerID: user-set id for the message. 0 denotes system message and is
 // reserved.
 type ServerID int
 
-// Devices: Array of device ids and names.
+// Devices: array of device ids and names.
 type DeviceListMessageDevices map[int]DeviceListMessageDevicesValue
 
 // DeviceListMessageDevicesValue: This is the properties map type for
 // [DeviceListMessageDevices].
 type DeviceListMessageDevicesValue struct {
-	// DeviceName: Name of the device
+	// DeviceName: name of the device.
 	DeviceName DeviceName `json:"DeviceName"`
-	// DeviceIndex: Index used for referencing the device in device messages.
+	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex            DeviceIndex                                 `json:"DeviceIndex"`
 	DeviceMessageTimingGap int                                         `json:"DeviceMessageTimingGap"`
 	DeviceFeatures         DeviceListMessageDevicesValueDeviceFeatures `json:"DeviceFeatures"`
 	DeviceDisplayName      ptr.Optional[string]                        `json:"DeviceDisplayName,omitzero"`
 }
 
-// ClientID: User-set id for the message. 0 denotes system message and is
+// ClientID: user-set id for the message. 0 denotes system message and is
 // reserved.
 type ClientID int
 
-// DeviceIndex: Index used for referencing the device in device messages.
+// DeviceIndex: index used for referencing the device in device messages.
 type DeviceIndex int
 
-// InputReadingMessageData: Properties map for [InputReadingMessage.Data].
+// InputReadingMessageData: properties map for [InputReadingMessage.Data].
 type InputReadingMessageData map[InputReadingMessageDataKey]int
 
 // InputReadingMessageDataKey represents valid keys in [InputReadingMessageData].
@@ -907,8 +907,8 @@ const (
 	InputReadingMessageDataButton   InputReadingMessageDataKey = "Button"
 )
 
-// OutputCommand: Properties map for [OutputCmdMessage.Command].
-type OutputCommand map[OutputCommandKey]OutputCommandValue
+// OutputCommand: properties map for [OutputCmdMessage.Command].
+type OutputCommand map[OutputCommandKey]OutputCommandValueType
 
 // OutputCommandKey represents valid keys in [OutputCommand].
 type OutputCommandKey string
@@ -926,97 +926,113 @@ const (
 	OutputCommandPositionWithDuration OutputCommandKey = "PositionWithDuration"
 )
 
-// OutputCommandValue is a type that represents all possible values of the map
-// [OutputCommand]. Only one field will be non-nil.
-type OutputCommandValue struct {
-	*OutputCommandValueValue                `json:",omitzero"`
-	*OutputCommandValuePositionWithDuration `json:",omitzero"`
+// OutputCommandValueType is a type that represents possible values of the map
+// [OutputCommand].
+//
+// The following types can be used for this interface:
+//   - [OutputCommandValue]
+//   - [OutputCommandPositionWithDurationValue]
+type OutputCommandValueType interface {
+	outputCommandValueType()
 }
 
-// OutputCommandValueValue is the value matching pattern for
-// "^(Vibrate|Rotate|Oscillate|Constrict|Spray|Position|Temperature|Led)$" of
-// [OutputCommand].
-type OutputCommandValueValue struct {
+// OutputCommandValue is the value matching pattern for [OutputCommandVibrate],
+// [OutputCommandRotate], [OutputCommandOscillate], [OutputCommandConstrict],
+// [OutputCommandSpray], [OutputCommandPosition], [OutputCommandTemperature] and
+// [OutputCommandLED] of [OutputCommand].
+type OutputCommandValue struct {
 	Value float64 `json:"Value"`
 }
 
-// OutputCommandValuePositionWithDuration is the value matching pattern for
-// "^PositionWithDuration$" of [OutputCommand].
-type OutputCommandValuePositionWithDuration struct {
+// OutputCommandPositionWithDurationValue is the value matching pattern for
+// [OutputCommandPositionWithDuration] of [OutputCommand].
+type OutputCommandPositionWithDurationValue struct {
 	Position float64 `json:"Position"`
 	Duration float64 `json:"Duration"`
 }
 
-// SystemID: Used for non-direct-reply messages that can only be sent from
+func (OutputCommandValue) outputCommandValueType()                     {}
+func (OutputCommandPositionWithDurationValue) outputCommandValueType() {}
+
+// SystemID: used for non-direct-reply messages that can only be sent from
 // server to client, using the reserved system message Id of 0.
 type SystemID int
 
-// DeviceName: Name of the device
+// DeviceName: name of the device.
 type DeviceName string
 
-// DeviceListMessageDevicesValueDeviceFeatures: Properties map for
+// DeviceListMessageDevicesValueDeviceFeatures: properties map for
 // [DeviceListMessageDevicesValue.DeviceFeatures].
-type DeviceListMessageDevicesValueDeviceFeatures map[int]DeviceFeatureV4
+type DeviceListMessageDevicesValueDeviceFeatures map[int]DeviceFeature
 
-// DeviceFeatureV4: Specifies feature for a device.
-type DeviceFeatureV4 struct {
-	FeatureDescription string                              `json:"FeatureDescription"`
-	FeatureIndex       int                                 `json:"FeatureIndex"`
-	Input              ptr.Optional[DeviceFeatureV4Input]  `json:"Input,omitzero"`
-	Output             ptr.Optional[DeviceFeatureV4Output] `json:"Output,omitzero"`
+// DeviceFeature: specifies feature for a device.
+type DeviceFeature struct {
+	FeatureDescription string                            `json:"FeatureDescription"`
+	FeatureIndex       int                               `json:"FeatureIndex"`
+	Input              ptr.Optional[DeviceFeatureInput]  `json:"Input,omitzero"`
+	Output             ptr.Optional[DeviceFeatureOutput] `json:"Output,omitzero"`
 }
 
-// DeviceFeatureV4Input: Properties map for [DeviceFeatureV4.Input].
-type DeviceFeatureV4Input map[string]DeviceFeatureV4InputValue
+// DeviceFeatureInput: properties map for [DeviceFeature.Input].
+type DeviceFeatureInput map[string]DeviceFeatureInputValue
 
-// DeviceFeatureV4InputValue: This is the properties map type for
-// [DeviceFeatureV4Input].
-type DeviceFeatureV4InputValue struct {
+// DeviceFeatureInputValue: This is the properties map type for
+// [DeviceFeatureInput].
+type DeviceFeatureInputValue struct {
 	ValueRange [][]int `json:"ValueRange"`
 }
 
-// DeviceFeatureV4Output: Properties map for [DeviceFeatureV4.Output].
-type DeviceFeatureV4Output map[DeviceFeatureV4OutputKey]DeviceFeatureV4OutputValue
+// DeviceFeatureOutput: properties map for [DeviceFeature.Output].
+type DeviceFeatureOutput map[DeviceFeatureOutputKey]DeviceFeatureOutputValueType
 
-// DeviceFeatureV4OutputKey represents valid keys in [DeviceFeatureV4Output].
-type DeviceFeatureV4OutputKey string
+// DeviceFeatureOutputKey represents valid keys in [DeviceFeatureOutput].
+type DeviceFeatureOutputKey string
 
-// Constants for valid keys in [DeviceFeatureV4Output].
+// Constants for valid keys in [DeviceFeatureOutput].
 const (
-	DeviceFeatureV4OutputPositionWithDuration DeviceFeatureV4OutputKey = "PositionWithDuration"
-	DeviceFeatureV4OutputVibrate              DeviceFeatureV4OutputKey = "Vibrate"
-	DeviceFeatureV4OutputRotate               DeviceFeatureV4OutputKey = "Rotate"
-	DeviceFeatureV4OutputOscillate            DeviceFeatureV4OutputKey = "Oscillate"
-	DeviceFeatureV4OutputConstrict            DeviceFeatureV4OutputKey = "Constrict"
-	DeviceFeatureV4OutputSpray                DeviceFeatureV4OutputKey = "Spray"
-	DeviceFeatureV4OutputPosition             DeviceFeatureV4OutputKey = "Position"
-	DeviceFeatureV4OutputTemperature          DeviceFeatureV4OutputKey = "Temperature"
-	DeviceFeatureV4OutputLED                  DeviceFeatureV4OutputKey = "Led"
+	DeviceFeatureOutputPositionWithDuration DeviceFeatureOutputKey = "PositionWithDuration"
+	DeviceFeatureOutputVibrate              DeviceFeatureOutputKey = "Vibrate"
+	DeviceFeatureOutputRotate               DeviceFeatureOutputKey = "Rotate"
+	DeviceFeatureOutputOscillate            DeviceFeatureOutputKey = "Oscillate"
+	DeviceFeatureOutputConstrict            DeviceFeatureOutputKey = "Constrict"
+	DeviceFeatureOutputSpray                DeviceFeatureOutputKey = "Spray"
+	DeviceFeatureOutputPosition             DeviceFeatureOutputKey = "Position"
+	DeviceFeatureOutputTemperature          DeviceFeatureOutputKey = "Temperature"
+	DeviceFeatureOutputLED                  DeviceFeatureOutputKey = "Led"
 )
 
-// DeviceFeatureV4OutputValue is a type that represents all possible values of
-// the map [DeviceFeatureV4Output]. Only one field will be non-nil.
-type DeviceFeatureV4OutputValue struct {
-	*DeviceFeatureV4OutputValuePositionWithDuration `json:",omitzero"`
-	*DeviceFeatureV4OutputValueValue                `json:",omitzero"`
+// DeviceFeatureOutputValueType is a type that represents possible values of the
+// map [DeviceFeatureOutput].
+//
+// The following types can be used for this interface:
+//   - [DeviceFeatureOutputPositionWithDurationValue]
+//   - [DeviceFeatureOutputValue]
+type DeviceFeatureOutputValueType interface {
+	deviceFeatureOutputValueType()
 }
 
-// DeviceFeatureV4OutputValuePositionWithDuration is the value matching pattern
-// for "PositionWithDuration" of [DeviceFeatureV4Output].
-type DeviceFeatureV4OutputValuePositionWithDuration struct {
-	// RangeInclusive: Serialization of Rust's RangeInclusive Type
+// DeviceFeatureOutputPositionWithDurationValue is the value matching pattern
+// for [DeviceFeatureOutputPositionWithDuration] of [DeviceFeatureOutput].
+type DeviceFeatureOutputPositionWithDurationValue struct {
+	// Position: serialization of Rust's RangeInclusive Type.
 	Position RangeInclusive `json:"Position"`
-	// RangeInclusive: Serialization of Rust's RangeInclusive Type
+	// Duration: serialization of Rust's RangeInclusive Type.
 	Duration RangeInclusive `json:"Duration"`
 }
 
-// DeviceFeatureV4OutputValueValue is the value matching pattern for
-// "^(Vibrate|Rotate|Oscillate|Constrict|Spray|Position|Temperature|Led)$" of
-// [DeviceFeatureV4Output].
-type DeviceFeatureV4OutputValueValue struct {
-	// RangeInclusive: Serialization of Rust's RangeInclusive Type
+// DeviceFeatureOutputValue is the value matching pattern for
+// [DeviceFeatureOutputVibrate], [DeviceFeatureOutputRotate],
+// [DeviceFeatureOutputOscillate], [DeviceFeatureOutputConstrict],
+// [DeviceFeatureOutputSpray], [DeviceFeatureOutputPosition],
+// [DeviceFeatureOutputTemperature] and [DeviceFeatureOutputLED] of
+// [DeviceFeatureOutput].
+type DeviceFeatureOutputValue struct {
+	// Value: serialization of Rust's RangeInclusive Type.
 	Value RangeInclusive `json:"Value"`
 }
 
-// RangeInclusive: Serialization of Rust's RangeInclusive Type
-type RangeInclusive []int
+func (DeviceFeatureOutputPositionWithDurationValue) deviceFeatureOutputValueType() {}
+func (DeviceFeatureOutputValue) deviceFeatureOutputValueType()                     {}
+
+// RangeInclusive: serialization of Rust's RangeInclusive Type.
+type RangeInclusive [2]int

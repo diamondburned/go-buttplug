@@ -48,6 +48,7 @@
                 just
                 jq
                 moreutils # for sponge
+                python3.pkgs.exrex # for schema generation
               ];
 
             GOEXPERIMENT = lib.concatStringsSep "," [
