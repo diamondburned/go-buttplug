@@ -927,7 +927,7 @@ type DeviceListMessage struct {
 	// reserved.
 	ID ClientID `json:"Id"`
 	// Devices: array of device ids and names.
-	Devices []DevicesItem `json:"Devices"`
+	Devices []Device `json:"Devices"`
 }
 
 // DeviceRemovedMessage: notifies client that a device of a certain type has
@@ -1139,7 +1139,7 @@ type DeviceMessages []string
 // reserved.
 type ClientID int
 
-type DevicesItem struct {
+type Device struct {
 	// DeviceName: name of the device.
 	DeviceName DeviceName `json:"DeviceName"`
 	// DeviceIndex: index used for referencing the device in device messages.

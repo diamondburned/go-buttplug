@@ -215,8 +215,8 @@ func (s *Session) startVibratingAll(ctx context.Context, setLevel float64) {
 				"messages", string(deviceMessagesJSON))
 		}
 
-		vibrators := filterList(devices, func(d schema.DevicesItem) bool {
-			return slices.ContainsFunc(d.DeviceMessages.ScalarCmd, func(s schema.ScalarCmdItem) bool {
+		vibrators := filterList(devices, func(d schema.Device) bool {
+			return slices.ContainsFunc(d.DeviceMessages.ScalarCmd, func(s schema.ScalarCmd) bool {
 				return ptr.ValueOrZero(s.ActuatorType) == buttplug.ActuatorVibrate
 			})
 		})
@@ -227,13 +227,13 @@ func (s *Session) startVibratingAll(ctx context.Context, setLevel float64) {
 				"name", d.DeviceName,
 				"index", d.DeviceIndex)
 
-			var scalars []schema.ScalarsItem
+			var scalars []schema.Scalar
 			for i, cmd := range d.DeviceMessages.ScalarCmd {
 				if ptr.ValueOrZero(cmd.ActuatorType) != buttplug.ActuatorVibrate {
 					continue
 				}
 
-				scalars = append(scalars, schema.ScalarsItem{
+				scalars = append(scalars, schema.Scalar{
 					Index:        i,
 					Scalar:       setLevel,
 					ActuatorType: *cmd.ActuatorType,

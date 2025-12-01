@@ -1146,7 +1146,7 @@ type DeviceListMessage struct {
 	// reserved.
 	ID ClientID `json:"Id"`
 	// Devices: array of device ids and names.
-	Devices []DevicesItem `json:"Devices"`
+	Devices []Device `json:"Devices"`
 }
 
 // DeviceRemovedMessage: notifies client that a device of a certain type has
@@ -1180,7 +1180,7 @@ type LinearCmdMessage struct {
 	// Vectors: device linear movement times (milliseconds) and positions
 	// (floating point, 0 < x < 1) keyed on linear actuator number, stepping
 	// will be device specific.
-	Vectors []VectorsItem `json:"Vectors"`
+	Vectors []Vector `json:"Vectors"`
 }
 
 // OKMessage: signifies successful processing of the message indicated by the
@@ -1297,7 +1297,7 @@ type RotateCmdMessage struct {
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 	// Rotations: device rotation speeds (floating point, 0 < x < 1) keyed on
 	// rotator number, stepping will be device specific.
-	Rotations []RotationsItem `json:"Rotations"`
+	Rotations []Rotation `json:"Rotations"`
 }
 
 // ScalarCmdMessage: sends a generic scalar command to a device.
@@ -1309,7 +1309,7 @@ type ScalarCmdMessage struct {
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 	// Scalars: device actution scalar (floating point, range can vary) keyed on
 	// acutator index, stepping will be device specific.
-	Scalars []ScalarsItem `json:"Scalars"`
+	Scalars []Scalar `json:"Scalars"`
 }
 
 // ScanningFinishedMessage: server notification to client that scanning has
@@ -1428,15 +1428,15 @@ type DeviceIndex int
 // DeviceMessages: a list of the messages a device will accept on this server
 // implementation.
 type DeviceMessages struct {
-	LinearCmd []LinearCmdItem `json:"LinearCmd,omitzero"`
+	LinearCmd []LinearCmd `json:"LinearCmd,omitzero"`
 	// RawReadCmd: attributes for raw device messages.
 	RawReadCmd ptr.Optional[RawMessageAttributes] `json:"RawReadCmd,omitzero"`
 	// RawSubscribeCmd: attributes for raw device messages.
 	RawSubscribeCmd ptr.Optional[RawMessageAttributes] `json:"RawSubscribeCmd,omitzero"`
 	// RawWriteCmd: attributes for raw device messages.
 	RawWriteCmd        ptr.Optional[RawMessageAttributes] `json:"RawWriteCmd,omitzero"`
-	RotateCmd          []RotateCmdItem                    `json:"RotateCmd,omitzero"`
-	ScalarCmd          []ScalarCmdItem                    `json:"ScalarCmd,omitzero"`
+	RotateCmd          []RotateCmd                        `json:"RotateCmd,omitzero"`
+	ScalarCmd          []ScalarCmd                        `json:"ScalarCmd,omitzero"`
 	SensorReadCmd      []SensorReadCmdItem                `json:"SensorReadCmd,omitzero"`
 	SensorSubscribeCmd []SensorSubscribeCmdItem           `json:"SensorSubscribeCmd,omitzero"`
 	// StopDeviceCmd: attributes for device message that have no attributes.
@@ -1447,7 +1447,7 @@ type DeviceMessages struct {
 // reserved.
 type ClientID int
 
-type DevicesItem struct {
+type Device struct {
 	// DeviceName: name of the device.
 	DeviceName DeviceName `json:"DeviceName"`
 	// DeviceIndex: index used for referencing the device in device messages.
@@ -1463,7 +1463,7 @@ type DevicesItem struct {
 // reserved.
 type ServerID int
 
-type VectorsItem struct {
+type Vector struct {
 	// Index: linear actuator number.
 	Index int `json:"Index"`
 	// Duration: linear movement time in milliseconds.
@@ -1473,7 +1473,7 @@ type VectorsItem struct {
 	Position float64 `json:"Position"`
 }
 
-type RotationsItem struct {
+type Rotation struct {
 	// Index: rotator number.
 	Index int `json:"Index"`
 	// Speed: rotation speed (floating point, 0 < x < 1), stepping will be
@@ -1484,7 +1484,7 @@ type RotationsItem struct {
 	Clockwise bool `json:"Clockwise"`
 }
 
-type ScalarsItem struct {
+type Scalar struct {
 	// Index: actuator index.
 	Index int `json:"Index"`
 	// Scalar: actuator scalar (floating point, range can vary), stepping will
@@ -1495,8 +1495,8 @@ type ScalarsItem struct {
 	ActuatorType string `json:"ActuatorType"`
 }
 
-// LinearCmdItem: attributes for device messages.
-type LinearCmdItem struct {
+// LinearCmd: attributes for device messages.
+type LinearCmd struct {
 	// ActuatorType: denotes type of actuator (Vibrator, Linear, Oscillator,
 	// etc...).
 	ActuatorType      ptr.Optional[string] `json:"ActuatorType,omitzero"`
@@ -1510,8 +1510,8 @@ type RawMessageAttributes struct {
 	Endpoints []string `json:"Endpoints,omitzero"`
 }
 
-// RotateCmdItem: attributes for device messages.
-type RotateCmdItem struct {
+// RotateCmd: attributes for device messages.
+type RotateCmd struct {
 	// ActuatorType: denotes type of actuator (Vibrator, Linear, Oscillator,
 	// etc...).
 	ActuatorType      ptr.Optional[string] `json:"ActuatorType,omitzero"`
@@ -1520,8 +1520,8 @@ type RotateCmdItem struct {
 	StepCount ptr.Optional[StepCount] `json:"StepCount,omitzero"`
 }
 
-// ScalarCmdItem: attributes for device messages.
-type ScalarCmdItem struct {
+// ScalarCmd: attributes for device messages.
+type ScalarCmd struct {
 	// ActuatorType: denotes type of actuator (Vibrator, Linear, Oscillator,
 	// etc...).
 	ActuatorType      ptr.Optional[string] `json:"ActuatorType,omitzero"`

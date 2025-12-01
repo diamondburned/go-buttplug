@@ -1208,7 +1208,7 @@ type DeviceListMessage struct {
 	// reserved.
 	ID ClientID `json:"Id"`
 	// Devices: array of device ids and names.
-	Devices []DevicesItem `json:"Devices"`
+	Devices []Device `json:"Devices"`
 }
 
 // DeviceRemovedMessage: notifies client that a device of a certain type has
@@ -1242,7 +1242,7 @@ type LinearCmdMessage struct {
 	// Vectors: device linear movement times (milliseconds) and positions
 	// (floating point, 0 < x < 1) keyed on linear actuator number, stepping
 	// will be device specific.
-	Vectors []VectorsItem `json:"Vectors"`
+	Vectors []Vector `json:"Vectors"`
 }
 
 // OKMessage: signifies successful processing of the message indicated by the
@@ -1389,7 +1389,7 @@ type RotateCmdMessage struct {
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 	// Rotations: device rotation speeds (floating point, 0 < x < 1) keyed on
 	// rotator number, stepping will be device specific.
-	Rotations []RotationsItem `json:"Rotations"`
+	Rotations []Rotation `json:"Rotations"`
 }
 
 // ScanningFinishedMessage: server notification to client that scanning has
@@ -1499,7 +1499,7 @@ type DeviceMessages struct {
 	VibrateCmd ptr.Optional[GenericMessageAttributes] `json:"VibrateCmd,omitzero"`
 }
 
-type DevicesItem struct {
+type Device struct {
 	// DeviceName: name of the device.
 	DeviceName DeviceName `json:"DeviceName"`
 	// DeviceIndex: index used for referencing the device in device messages.
@@ -1513,7 +1513,7 @@ type DevicesItem struct {
 // reserved.
 type ServerID int
 
-type VectorsItem struct {
+type Vector struct {
 	// Index: linear actuator number.
 	Index int `json:"Index"`
 	// Duration: linear movement time in milliseconds.
@@ -1537,7 +1537,7 @@ const (
 	RequestLogLevelTrace RequestLogLevel = "Trace"
 )
 
-type RotationsItem struct {
+type Rotation struct {
 	// Index: rotator number.
 	Index int `json:"Index"`
 	// Speed: rotation speed (floating point, 0 < x < 1), stepping will be

@@ -92,7 +92,13 @@ func (gen *generator) generateArray(schema *jsonschema.Schema, inline bool) j.Co
 		"item_schema", item)
 
 	if item.Type().Is(jsonschema.ObjectType) {
-		item = item.WithName(schema.Name() + "Item")
+		var itemName string
+		if singularForm, ok := endsWithKnownPlural(schema.Name()); ok {
+			itemName = singularForm
+		} else {
+			itemName = concatStringsNoOverlap(schema.Name(), "Item")
+		}
+		item = item.WithName(itemName)
 
 		gen.enqueue(item)
 		return j.Add(array).Id(item.Name())
@@ -195,7 +201,7 @@ func (gen *generator) generateObjectAsMap(schema *jsonschema.Schema, inline bool
 		// If this schema is nested inside another object, mangle the name
 		// to also have the object's name for clarity.
 		parentName = parent.Name()
-		schemaName = concatStringsNoOverlap(parentName, schemaName)
+		schemaName = concatStringsNoOverlap(strings.TrimSuffix(parentName, "Message"), schemaName)
 	}
 
 	mapType := schemaName

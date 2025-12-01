@@ -724,7 +724,7 @@ type DeviceListMessage struct {
 	// reserved.
 	ID ServerID `json:"Id"`
 	// Devices: array of device ids and names.
-	Devices DeviceListMessageDevices `json:"Devices"`
+	Devices DeviceListDevices `json:"Devices"`
 }
 
 // ErrorMessage: signifies the server encountered an error while processing the
@@ -756,9 +756,9 @@ type InputReadingMessage struct {
 	// reserved.
 	ID ServerID `json:"Id"`
 	// DeviceIndex: index used for referencing the device in device messages.
-	DeviceIndex  DeviceIndex             `json:"DeviceIndex"`
-	FeatureIndex int                     `json:"FeatureIndex"`
-	Data         InputReadingMessageData `json:"Data"`
+	DeviceIndex  DeviceIndex      `json:"DeviceIndex"`
+	FeatureIndex int              `json:"FeatureIndex"`
+	Data         InputReadingData `json:"Data"`
 }
 
 // OKMessage: signifies successful processing of the message indicated by the
@@ -777,8 +777,8 @@ type OutputCmdMessage struct {
 	// DeviceIndex: index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 	// FeatureIndex: index used for referencing the device in device messages.
-	FeatureIndex DeviceIndex   `json:"FeatureIndex"`
-	Command      OutputCommand `json:"Command"`
+	FeatureIndex DeviceIndex `json:"FeatureIndex"`
+	Command      OutputCmd   `json:"Command"`
 }
 
 // PingMessage: connection keep-alive message.
@@ -872,18 +872,18 @@ type StopScanningMessage struct {
 type ServerID int
 
 // Devices: array of device ids and names.
-type DeviceListMessageDevices map[int]DeviceListMessageDevicesValue
+type DeviceListDevices map[int]DeviceListDevicesValue
 
-// DeviceListMessageDevicesValue: This is the properties map type for
-// [DeviceListMessageDevices].
-type DeviceListMessageDevicesValue struct {
+// DeviceListDevicesValue: This is the properties map type for
+// [DeviceListDevices].
+type DeviceListDevicesValue struct {
 	// DeviceName: name of the device.
 	DeviceName DeviceName `json:"DeviceName"`
 	// DeviceIndex: index used for referencing the device in device messages.
-	DeviceIndex            DeviceIndex                                 `json:"DeviceIndex"`
-	DeviceMessageTimingGap int                                         `json:"DeviceMessageTimingGap"`
-	DeviceFeatures         DeviceListMessageDevicesValueDeviceFeatures `json:"DeviceFeatures"`
-	DeviceDisplayName      ptr.Optional[string]                        `json:"DeviceDisplayName,omitzero"`
+	DeviceIndex            DeviceIndex                          `json:"DeviceIndex"`
+	DeviceMessageTimingGap int                                  `json:"DeviceMessageTimingGap"`
+	DeviceFeatures         DeviceListDevicesValueDeviceFeatures `json:"DeviceFeatures"`
+	DeviceDisplayName      ptr.Optional[string]                 `json:"DeviceDisplayName,omitzero"`
 }
 
 // ClientID: user-set id for the message. 0 denotes system message and is
@@ -893,66 +893,66 @@ type ClientID int
 // DeviceIndex: index used for referencing the device in device messages.
 type DeviceIndex int
 
-// InputReadingMessageData: properties map for [InputReadingMessage.Data].
-type InputReadingMessageData map[InputReadingMessageDataKey]int
+// InputReadingData: properties map for [InputReadingMessage.Data].
+type InputReadingData map[InputReadingDataKey]int
 
-// InputReadingMessageDataKey represents valid keys in [InputReadingMessageData].
-type InputReadingMessageDataKey string
+// InputReadingDataKey represents valid keys in [InputReadingData].
+type InputReadingDataKey string
 
-// Constants for valid keys in [InputReadingMessageData].
+// Constants for valid keys in [InputReadingData].
 const (
-	InputReadingMessageDataBattery  InputReadingMessageDataKey = "Battery"
-	InputReadingMessageDataRSSI     InputReadingMessageDataKey = "Rssi"
-	InputReadingMessageDataPressure InputReadingMessageDataKey = "Pressure"
-	InputReadingMessageDataButton   InputReadingMessageDataKey = "Button"
+	InputReadingDataBattery  InputReadingDataKey = "Battery"
+	InputReadingDataRSSI     InputReadingDataKey = "Rssi"
+	InputReadingDataPressure InputReadingDataKey = "Pressure"
+	InputReadingDataButton   InputReadingDataKey = "Button"
 )
 
-// OutputCommand: properties map for [OutputCmdMessage.Command].
-type OutputCommand map[OutputCommandKey]OutputCommandValueType
+// OutputCmd: properties map for [OutputCmdMessage.Command].
+type OutputCmd map[OutputCmdKey]OutputCmdValueType
 
-// OutputCommandKey represents valid keys in [OutputCommand].
-type OutputCommandKey string
+// OutputCmdKey represents valid keys in [OutputCmd].
+type OutputCmdKey string
 
-// Constants for valid keys in [OutputCommand].
+// Constants for valid keys in [OutputCmd].
 const (
-	OutputCommandVibrate              OutputCommandKey = "Vibrate"
-	OutputCommandRotate               OutputCommandKey = "Rotate"
-	OutputCommandOscillate            OutputCommandKey = "Oscillate"
-	OutputCommandConstrict            OutputCommandKey = "Constrict"
-	OutputCommandSpray                OutputCommandKey = "Spray"
-	OutputCommandPosition             OutputCommandKey = "Position"
-	OutputCommandTemperature          OutputCommandKey = "Temperature"
-	OutputCommandLED                  OutputCommandKey = "Led"
-	OutputCommandPositionWithDuration OutputCommandKey = "PositionWithDuration"
+	OutputCmdVibrate              OutputCmdKey = "Vibrate"
+	OutputCmdRotate               OutputCmdKey = "Rotate"
+	OutputCmdOscillate            OutputCmdKey = "Oscillate"
+	OutputCmdConstrict            OutputCmdKey = "Constrict"
+	OutputCmdSpray                OutputCmdKey = "Spray"
+	OutputCmdPosition             OutputCmdKey = "Position"
+	OutputCmdTemperature          OutputCmdKey = "Temperature"
+	OutputCmdLED                  OutputCmdKey = "Led"
+	OutputCmdPositionWithDuration OutputCmdKey = "PositionWithDuration"
 )
 
-// OutputCommandValueType is a type that represents possible values of the map
-// [OutputCommand].
+// OutputCmdValueType is a type that represents possible values of the map
+// [OutputCmd].
 //
 // The following types can be used for this interface:
-//   - [OutputCommandValue]
-//   - [OutputCommandPositionWithDurationValue]
-type OutputCommandValueType interface {
-	outputCommandValueType()
+//   - [OutputCmdValue]
+//   - [OutputCmdPositionWithDurationValue]
+type OutputCmdValueType interface {
+	outputCmdValueType()
 }
 
-// OutputCommandValue is the value matching pattern for [OutputCommandVibrate],
-// [OutputCommandRotate], [OutputCommandOscillate], [OutputCommandConstrict],
-// [OutputCommandSpray], [OutputCommandPosition], [OutputCommandTemperature] and
-// [OutputCommandLED] of [OutputCommand].
-type OutputCommandValue struct {
+// OutputCmdValue is the value matching pattern for [OutputCmdVibrate],
+// [OutputCmdRotate], [OutputCmdOscillate], [OutputCmdConstrict],
+// [OutputCmdSpray], [OutputCmdPosition], [OutputCmdTemperature] and
+// [OutputCmdLED] of [OutputCmd].
+type OutputCmdValue struct {
 	Value float64 `json:"Value"`
 }
 
-// OutputCommandPositionWithDurationValue is the value matching pattern for
-// [OutputCommandPositionWithDuration] of [OutputCommand].
-type OutputCommandPositionWithDurationValue struct {
+// OutputCmdPositionWithDurationValue is the value matching pattern for
+// [OutputCmdPositionWithDuration] of [OutputCmd].
+type OutputCmdPositionWithDurationValue struct {
 	Position float64 `json:"Position"`
 	Duration float64 `json:"Duration"`
 }
 
-func (OutputCommandValue) outputCommandValueType()                     {}
-func (OutputCommandPositionWithDurationValue) outputCommandValueType() {}
+func (OutputCmdValue) outputCmdValueType()                     {}
+func (OutputCmdPositionWithDurationValue) outputCmdValueType() {}
 
 // SystemID: used for non-direct-reply messages that can only be sent from
 // server to client, using the reserved system message Id of 0.
@@ -961,9 +961,9 @@ type SystemID int
 // DeviceName: name of the device.
 type DeviceName string
 
-// DeviceListMessageDevicesValueDeviceFeatures: properties map for
-// [DeviceListMessageDevicesValue.DeviceFeatures].
-type DeviceListMessageDevicesValueDeviceFeatures map[int]DeviceFeature
+// DeviceListDevicesValueDeviceFeatures: properties map for
+// [DeviceListDevicesValue.DeviceFeatures].
+type DeviceListDevicesValueDeviceFeatures map[int]DeviceFeature
 
 // DeviceFeature: specifies feature for a device.
 type DeviceFeature struct {
