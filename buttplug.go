@@ -23,8 +23,6 @@ import (
 	buttplugschema "libdb.so/go-buttplug/schema/v3"
 )
 
-//go:generate go run ./cmd/buttplug-generate
-
 // MessageVersion is the current Buttplug message version this library
 // implements. See https://docs.buttplug.io/docs/spec/changelog.
 const MessageVersion = 3

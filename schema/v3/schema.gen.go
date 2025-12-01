@@ -1341,7 +1341,7 @@ type SensorReadingMessage struct {
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 	SensorIndex int         `json:"SensorIndex"`
 	SensorType  string      `json:"SensorType"`
-	Data        []byte      `json:"Data,format:array"`
+	Data        []int       `json:"Data"`
 }
 
 // SensorSubscribeCmdMessage: Sends a request to subscribe for updates to a

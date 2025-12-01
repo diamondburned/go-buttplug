@@ -45,6 +45,9 @@
                 # development tools
                 go_latest
                 gopls
+                just
+                jq
+                moreutils # for sponge
               ];
 
             GOEXPERIMENT = lib.concatStringsSep "," [

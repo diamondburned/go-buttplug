@@ -10,8 +10,8 @@ import (
 
 	j "github.com/dave/jennifer/jen"
 	"github.com/davecgh/go-spew/spew"
-	"libdb.so/go-buttplug/cmd/buttplug-generate/jsonschema"
 	"github.com/lmittmann/tint"
+	"libdb.so/go-buttplug/cmd/buttplug-generate/jsonschema"
 )
 
 const (
@@ -20,13 +20,15 @@ const (
 )
 
 var (
-	schemaPath = "./schema/buttplug-schema.json"
-	outputDir  = "./schema"
+	schemaPath = "./buttplug-schema.json"
+	outputDir  = "./"
+	quiet      = false
 )
 
 func init() {
 	flag.StringVar(&schemaPath, "schema", schemaPath, "Path to the Buttplug schema JSON file.")
 	flag.StringVar(&outputDir, "outdir", outputDir, "Directory to output the generated code.")
+	flag.BoolVar(&quiet, "quiet", quiet, "If set, suppress non-error log output.")
 }
 
 var (
@@ -39,8 +41,13 @@ func main() {
 	log.SetFlags(0)
 	flag.Parse()
 
+	level := slog.LevelWarn
+	if !quiet {
+		level = slog.LevelDebug
+	}
+
 	tintHandler := tint.NewHandler(os.Stderr, &tint.Options{
-		Level: slog.LevelDebug,
+		Level: level,
 	})
 	logger := slog.New(tintHandler)
 	slog.SetDefault(logger)
