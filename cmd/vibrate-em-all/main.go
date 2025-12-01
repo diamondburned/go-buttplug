@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json/v2"
 	"errors"
 	"flag"
 	"fmt"
@@ -205,6 +206,14 @@ func (s *Session) startVibratingAll(ctx context.Context, setLevel float64) {
 		}
 
 		devices := deviceListMsg.Devices
+		for _, d := range devices {
+			deviceMessagesJSON, _ := json.Marshal(d.DeviceMessages)
+			slog.InfoContext(ctx,
+				"found device",
+				"name", d.DeviceName,
+				"index", d.DeviceIndex,
+				"messages", string(deviceMessagesJSON))
+		}
 
 		vibrators := filterList(devices, func(d schema.DevicesItem) bool {
 			return slices.ContainsFunc(d.DeviceMessages.ScalarCmd, func(s schema.ScalarCmdItem) bool {
@@ -215,7 +224,8 @@ func (s *Session) startVibratingAll(ctx context.Context, setLevel float64) {
 		for _, d := range vibrators {
 			slog.InfoContext(ctx,
 				"found vibrator device",
-				"name", d.DeviceName)
+				"name", d.DeviceName,
+				"index", d.DeviceIndex)
 
 			var scalars []schema.ScalarsItem
 			for i, cmd := range d.DeviceMessages.ScalarCmd {
@@ -223,16 +233,9 @@ func (s *Session) startVibratingAll(ctx context.Context, setLevel float64) {
 					continue
 				}
 
-				var scalar float64
-				if cmd.StepCount != nil {
-					scalar = float64(*cmd.StepCount) * setLevel
-				} else {
-					scalar = setLevel
-				}
-
 				scalars = append(scalars, schema.ScalarsItem{
 					Index:        i,
-					Scalar:       scalar,
+					Scalar:       setLevel,
 					ActuatorType: *cmd.ActuatorType,
 				})
 			}
