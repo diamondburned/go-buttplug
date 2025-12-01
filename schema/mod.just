@@ -9,8 +9,8 @@ update: fetch patch generate
 	@echo "Updated with upstream revision {{UPSTREAM_REVISION}}."
 
 # generate go code from the schema
-generate:
-	@go run ../cmd/buttplug-generate --quiet
+generate *args:
+	@go run ../cmd/buttplug-generate {{args}}
 
 # fetch the buttplug schema from upstream repo
 [private]

@@ -123,6 +123,10 @@ func (gen *generator) generateObject(schema *jsonschema.Schema, inline bool) j.C
 	}
 
 	properties, _ := schema.Properties()
+	return gen.generateObjectInlineFromProperties(properties)
+}
+
+func (gen *generator) generateObjectInlineFromProperties(properties jsonschema.OrderedProperties) j.Code {
 	slog.Debug(
 		"generating object schema as an inline struct",
 		"properties", properties)
@@ -211,7 +215,7 @@ func (gen *generator) generateObjectAsMap(schema *jsonschema.Schema, inline bool
 	if len(patternProperties) == 1 {
 		k := patternProperties[0].KeyPattern
 
-		if kUnion, ok := keyPatternIsStringUnion(k); ok {
+		if kUnion, ok := keyPatternStringUnion(k); ok {
 			kUnionType = kUnion
 			kstmt.Id(schemaName + "Key")
 		} else if k == "^[0-9]*" {
@@ -222,14 +226,13 @@ func (gen *generator) generateObjectAsMap(schema *jsonschema.Schema, inline bool
 			kstmt.String().Commentf("/* %s */", k)
 		}
 	} else if isAllFunc(patternProperties, func(p jsonschema.PatternProperty) bool {
-		_, isStringUnion := keyPatternIsStringUnion(p.KeyPattern)
-		return isStringUnion
+		return keyPatternIsStringUnion(p.KeyPattern)
 	}) {
 		// Join all string union keys into one union type.
 		// This covers just one specific edge case, but it is the only edge case
 		// we need :3
 		for k := range patternProperties.KeyPatterns() {
-			p, _ := keyPatternIsStringUnion(k)
+			p, _ := keyPatternStringUnion(k)
 			kUnionType = slices.Concat(kUnionType, p)
 		}
 		kstmt.Id(schemaName + "Key")
@@ -288,9 +291,23 @@ func (gen *generator) generateObjectAsMap(schema *jsonschema.Schema, inline bool
 			}
 
 			var tail string
-			if keyUnion, ok := keyPatternIsStringUnion(k); ok {
+
+			// We use a variety of heuristics to try to get a nice name for the
+			// generated type.
+			switch {
+			// If the value struct only has 1 property, then we can just name it
+			// after that property.
+			case v.Type().Is(jsonschema.ObjectType) && v.NumProperties() == 1:
+				props, _ := v.Properties()
+				tail = props[0].Name
+
+			// If the key pattern is a string union, join the words together.
+			case keyPatternIsStringUnion(k):
+				keyUnion, _ := keyPatternStringUnion(k)
 				tail = jsonschema.FormatIdentifier(strings.Join(keyUnion, ""))
-			} else {
+
+			// Otherwise, fall back to using a number.
+			default:
 				tail = fmt.Sprintf("Case%d", counter)
 			}
 
@@ -346,7 +363,12 @@ func clarifyPropertiesTypeOrigin(description, typeName string) string {
 	return endDescriptionSentenceForNext(description) + fmt.Sprintf(" This is the properties map type for [%s].", typeName)
 }
 
-func keyPatternIsStringUnion(k string) ([]string, bool) {
+func keyPatternIsStringUnion(k string) bool {
+	_, ok := keyPatternStringUnion(k)
+	return ok
+}
+
+func keyPatternStringUnion(k string) ([]string, bool) {
 	k = strings.Trim(k, "^()$")
 
 	// Allow single string word case.
@@ -457,13 +479,26 @@ func (gen *generator) generateByteArray(schema *jsonschema.Schema, inline bool) 
 func joinStringDetectOverlap(a, b string) string {
 	aParts := splitGoNameParts(a)
 	bParts := splitGoNameParts(b)
-	for len(aParts) > 0 && len(bParts) > 0 {
-		if aParts[len(aParts)-1] != bParts[0] {
-			break
+
+	parts := slices.Concat(aParts, bParts)
+
+	// Remove XYX stuttering.
+	for i := 2; i < len(parts); i++ {
+		w1 := parts[i-2]
+		w2 := parts[i]
+		if w1 == w2 {
+			parts = slices.Delete(parts, i-1, i)
 		}
-		bParts = bParts[1:]
 	}
-	return strings.Join(slices.Concat(aParts, bParts), "")
+
+	// Remove XX overlap.
+	for i := 1; i < len(parts); i++ {
+		if parts[i-1] == parts[i] {
+			parts = slices.Delete(parts, i, i+1)
+		}
+	}
+
+	return strings.Join(parts, "")
 }
 
 var (

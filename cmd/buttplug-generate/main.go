@@ -22,13 +22,13 @@ const (
 var (
 	schemaPath = "./buttplug-schema.json"
 	outputDir  = "./"
-	quiet      = false
+	verbose    = false
 )
 
 func init() {
 	flag.StringVar(&schemaPath, "schema", schemaPath, "Path to the Buttplug schema JSON file.")
 	flag.StringVar(&outputDir, "outdir", outputDir, "Directory to output the generated code.")
-	flag.BoolVar(&quiet, "quiet", quiet, "If set, suppress non-error log output.")
+	flag.BoolVar(&verbose, "verbose", verbose, "If set, enable verbose logging.")
 }
 
 var (
@@ -42,7 +42,7 @@ func main() {
 	flag.Parse()
 
 	level := slog.LevelWarn
-	if !quiet {
+	if verbose {
 		level = slog.LevelDebug
 	}
 

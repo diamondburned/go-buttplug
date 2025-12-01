@@ -11,8 +11,8 @@ import (
 	"slices"
 	"strings"
 
-	"libdb.so/go-buttplug/schema/ptr"
 	"github.com/santhosh-tekuri/jsonschema/v6"
+	"libdb.so/go-buttplug/schema/ptr"
 )
 
 // Schema defines a JSON Schema object.
@@ -186,6 +186,21 @@ type OrderedProperty struct {
 	requiredIx int
 }
 
+// NewOrderedProperty creates a new OrderedProperty from the name, schema, and
+// optionally whether it is required.
+func NewOrderedProperty(name string, schema *Schema, required bool) OrderedProperty {
+	ix := -1
+	if required {
+		ix = 0
+	}
+	return OrderedProperty{
+		Name:       FormatIdentifier(name),
+		JSONName:   name,
+		Schema:     schema,
+		requiredIx: ix,
+	}
+}
+
 // Unref returns the underlying schema of the property.
 func (p OrderedProperty) Unref() OrderedProperty {
 	return OrderedProperty{
@@ -248,9 +263,9 @@ func (s *Schema) Properties() (OrderedProperties, bool) {
 	return properties, true
 }
 
-// PropertyIsRequired returns true if the given property name is required.
-func (s *Schema) PropertyIsRequired(propertyName string) bool {
-	return slices.Contains(s.self.Required, propertyName)
+// NumProperties returns the number of properties in the schema.
+func (s *Schema) NumProperties() int {
+	return len(s.self.Properties)
 }
 
 // AdditionalProperties returns whether the schema allows additional properties

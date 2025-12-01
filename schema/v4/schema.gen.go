@@ -777,8 +777,8 @@ type OutputCmdMessage struct {
 	// DeviceIndex: Index used for referencing the device in device messages.
 	DeviceIndex DeviceIndex `json:"DeviceIndex"`
 	// DeviceIndex: Index used for referencing the device in device messages.
-	FeatureIndex DeviceIndex                 `json:"FeatureIndex"`
-	Command      OutputCommandMessageCommand `json:"Command"`
+	FeatureIndex DeviceIndex   `json:"FeatureIndex"`
+	Command      OutputCommand `json:"Command"`
 }
 
 // PingMessage: Connection keep-alive message.
@@ -907,44 +907,42 @@ const (
 	InputReadingMessageDataButton   InputReadingMessageDataKey = "Button"
 )
 
-// OutputCommandMessageCommand: Properties map for [OutputCmdMessage.Command].
-type OutputCommandMessageCommand map[OutputCommandMessageCommandKey]OutputCommandMessageCommandValue
+// OutputCommand: Properties map for [OutputCmdMessage.Command].
+type OutputCommand map[OutputCommandKey]OutputCommandValue
 
-// OutputCommandMessageCommandKey represents valid keys in [OutputCommandMessageCommand].
-type OutputCommandMessageCommandKey string
+// OutputCommandKey represents valid keys in [OutputCommand].
+type OutputCommandKey string
 
-// Constants for valid keys in [OutputCommandMessageCommand].
+// Constants for valid keys in [OutputCommand].
 const (
-	OutputCommandMessageCommandVibrate              OutputCommandMessageCommandKey = "Vibrate"
-	OutputCommandMessageCommandRotate               OutputCommandMessageCommandKey = "Rotate"
-	OutputCommandMessageCommandOscillate            OutputCommandMessageCommandKey = "Oscillate"
-	OutputCommandMessageCommandConstrict            OutputCommandMessageCommandKey = "Constrict"
-	OutputCommandMessageCommandSpray                OutputCommandMessageCommandKey = "Spray"
-	OutputCommandMessageCommandPosition             OutputCommandMessageCommandKey = "Position"
-	OutputCommandMessageCommandTemperature          OutputCommandMessageCommandKey = "Temperature"
-	OutputCommandMessageCommandLED                  OutputCommandMessageCommandKey = "Led"
-	OutputCommandMessageCommandPositionWithDuration OutputCommandMessageCommandKey = "PositionWithDuration"
+	OutputCommandVibrate              OutputCommandKey = "Vibrate"
+	OutputCommandRotate               OutputCommandKey = "Rotate"
+	OutputCommandOscillate            OutputCommandKey = "Oscillate"
+	OutputCommandConstrict            OutputCommandKey = "Constrict"
+	OutputCommandSpray                OutputCommandKey = "Spray"
+	OutputCommandPosition             OutputCommandKey = "Position"
+	OutputCommandTemperature          OutputCommandKey = "Temperature"
+	OutputCommandLED                  OutputCommandKey = "Led"
+	OutputCommandPositionWithDuration OutputCommandKey = "PositionWithDuration"
 )
 
-// OutputCommandMessageCommandValue is a type that represents all possible
-// values of the map [OutputCommandMessageCommand]. Only one field will be
-// non-nil.
-type OutputCommandMessageCommandValue struct {
-	*OutputCommandMessageCommandValueVibrateRotateOscillateConstrictSprayPositionTemperatureLED `json:",omitzero"`
-	*OutputCommandMessageCommandValuePositionWithDuration                                       `json:",omitzero"`
+// OutputCommandValue is a type that represents all possible values of the map
+// [OutputCommand]. Only one field will be non-nil.
+type OutputCommandValue struct {
+	*OutputCommandValueValue                `json:",omitzero"`
+	*OutputCommandValuePositionWithDuration `json:",omitzero"`
 }
 
-// OutputCommandMessageCommandValueVibrateRotateOscillateConstrictSprayPositionTemperatureLED
-// is the value matching pattern for
+// OutputCommandValueValue is the value matching pattern for
 // "^(Vibrate|Rotate|Oscillate|Constrict|Spray|Position|Temperature|Led)$" of
-// [OutputCommandMessageCommand].
-type OutputCommandMessageCommandValueVibrateRotateOscillateConstrictSprayPositionTemperatureLED struct {
+// [OutputCommand].
+type OutputCommandValueValue struct {
 	Value float64 `json:"Value"`
 }
 
-// OutputCommandMessageCommandValuePositionWithDuration is the value matching
-// pattern for "^PositionWithDuration$" of [OutputCommandMessageCommand].
-type OutputCommandMessageCommandValuePositionWithDuration struct {
+// OutputCommandValuePositionWithDuration is the value matching pattern for
+// "^PositionWithDuration$" of [OutputCommand].
+type OutputCommandValuePositionWithDuration struct {
 	Position float64 `json:"Position"`
 	Duration float64 `json:"Duration"`
 }
@@ -999,8 +997,8 @@ const (
 // DeviceFeatureV4OutputValue is a type that represents all possible values of
 // the map [DeviceFeatureV4Output]. Only one field will be non-nil.
 type DeviceFeatureV4OutputValue struct {
-	*DeviceFeatureV4OutputValuePositionWithDuration                                       `json:",omitzero"`
-	*DeviceFeatureV4OutputValueVibrateRotateOscillateConstrictSprayPositionTemperatureLED `json:",omitzero"`
+	*DeviceFeatureV4OutputValuePositionWithDuration `json:",omitzero"`
+	*DeviceFeatureV4OutputValueValue                `json:",omitzero"`
 }
 
 // DeviceFeatureV4OutputValuePositionWithDuration is the value matching pattern
@@ -1012,11 +1010,10 @@ type DeviceFeatureV4OutputValuePositionWithDuration struct {
 	Duration RangeInclusive `json:"Duration"`
 }
 
-// DeviceFeatureV4OutputValueVibrateRotateOscillateConstrictSprayPositionTemperatureLED
-// is the value matching pattern for
+// DeviceFeatureV4OutputValueValue is the value matching pattern for
 // "^(Vibrate|Rotate|Oscillate|Constrict|Spray|Position|Temperature|Led)$" of
 // [DeviceFeatureV4Output].
-type DeviceFeatureV4OutputValueVibrateRotateOscillateConstrictSprayPositionTemperatureLED struct {
+type DeviceFeatureV4OutputValueValue struct {
 	// RangeInclusive: Serialization of Rust's RangeInclusive Type
 	Value RangeInclusive `json:"Value"`
 }
